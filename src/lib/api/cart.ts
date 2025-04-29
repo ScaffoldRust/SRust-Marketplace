@@ -39,14 +39,14 @@ export const cartApi = {
         const newQuantity = existingItem.quantity + quantity;
         return await this.updateCartItemQuantity(userId, productId, newQuantity);
         } else {
-        // Add new item to cart
-        const { data, error } = await supabase
-            .from('cart_items')
-            .insert([{ user_id: userId, product_id: productId, quantity }])
-            .select()
-            .single();
+            const { data, error } = await supabase
+                .from('cart_items')
+                .insert([{ user_id: userId, product_id: productId, quantity }])
+                .select()
+                .single();
+                
         
-        return { data, error: error as Error | null };
+            return { data, error: error as Error | null };
         }
     },
     

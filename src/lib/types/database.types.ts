@@ -2,33 +2,33 @@ export type Database = {
     public: {
         Tables: {
             products: {
-            Row: Product;
-            Insert: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'rating' | 'rating_count'>;
-            Update: Partial<Omit<Product, 'id' | 'created_at' | 'updated_at'>>;
+                Row: Product;
+                Insert: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'rating' | 'rating_count'>;
+                Update: Partial<Omit<Product, 'id' | 'created_at' | 'updated_at'>>;
             };
             categories: {
-            Row: Category;
-            Insert: Omit<Category, 'id'>;
-            Update: Partial<Omit<Category, 'id'>>;
+                Row: Category;
+                Insert: Omit<Category, 'id'>;
+                Update: Partial<Omit<Category, 'id'>>;
             };
             product_images: {
-            Row: ProductImage;
-            Insert: Omit<ProductImage, 'id'>;
-            Update: Partial<Omit<ProductImage, 'id'>>;
+                Row: ProductImage;
+                Insert: Omit<ProductImage, 'id'>;
+                Update: Partial<Omit<ProductImage, 'id'>>;
             };
             wishlist_items: {
-            Row: WishlistItem;
-            Insert: Omit<WishlistItem, 'id' | 'created_at'>;
-            Update: Partial<Omit<WishlistItem, 'id' | 'created_at'>>;
+                Row: WishlistItem;
+                Insert: Omit<WishlistItem, 'id' | 'created_at'>;
+                Update: Partial<Omit<WishlistItem, 'id' | 'created_at'>>;
             };
             cart_items: {
-            Row: CartItem;
-            Insert: Omit<CartItem, 'id' | 'created_at' | 'updated_at'>;
-            Update: Partial<Omit<CartItem, 'id' | 'created_at' | 'updated_at'>>;
+                Row: CartItem;
+                Insert: Omit<CartItem, 'id' | 'created_at' | 'updated_at'>;
+                Update: Partial<Omit<CartItem, 'id' | 'created_at' | 'updated_at'>>;
             };
         };
         Functions: {
-            search_products: {
+                search_products: {
             Args: {
                 search_query: string;
                 category_id?: string;

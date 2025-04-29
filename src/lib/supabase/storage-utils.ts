@@ -3,7 +3,7 @@ import { supabase } from './client';
 /**
  * Test the storage configuration to ensure it's properly set up
  */
-export const testStorageConfiguration = async (): Promise<{ 
+export const testStorageConfiguration = async (): Promise<{
     success: boolean; 
     issues?: string[]; 
     error?: string;

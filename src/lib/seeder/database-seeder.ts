@@ -39,34 +39,34 @@ const seedCategories = async (): Promise<{ success: boolean; data?: Category[]; 
     // Define initial categories
     const initialCategories = [
         {
-        name: 'Clothing',
-        slug: 'clothing',
-        description: 'Apparel and wearable items'
+            name: 'Clothing',
+            slug: 'clothing',
+            description: 'Apparel and wearable items'
         },
         {
-        name: 'Electronics',
-        slug: 'electronics',
-        description: 'Electronic devices and accessories'
+            name: 'Electronics',
+            slug: 'electronics',
+            description: 'Electronic devices and accessories'
         },
         {
-        name: 'Books',
-        slug: 'books',
-        description: 'Printed and digital books'
+            name: 'Books',
+            slug: 'books',
+            description: 'Printed and digital books'
         },
         {
-        name: 'Art',
-        slug: 'art',
-        description: 'Artwork and creative pieces'
+            name: 'Art',
+            slug: 'art',
+            description: 'Artwork and creative pieces'
+        },
+            {
+            name: 'Virtual Goods',
+            slug: 'virtual-goods',
+            description: 'Digital items and virtual assets'
         },
         {
-        name: 'Virtual Goods',
-        slug: 'virtual-goods',
-        description: 'Digital items and virtual assets'
-        },
-        {
-        name: 'Collectibles',
-        slug: 'collectibles',
-        description: 'Collectible items and memorabilia'
+            name: 'Collectibles',
+            slug: 'collectibles',
+            description: 'Collectible items and memorabilia'
         }
     ];
     
@@ -82,9 +82,9 @@ const seedCategories = async (): Promise<{ success: boolean; data?: Category[]; 
     
     // Insert categories
     const { data, error } = await supabase
-        .from('categories')
-        .insert(initialCategories)
-        .select();
+    .from('categories')
+    .insert(initialCategories)
+    .select();
     
     if (error) {
         throw new Error(`Error inserting categories: ${error.message}`);
@@ -94,52 +94,52 @@ const seedCategories = async (): Promise<{ success: boolean; data?: Category[]; 
     const subCategories = [
       // Clothing subcategories
         {
-        name: 'T-Shirts',
-        slug: 't-shirts',
-        description: 'Short-sleeved casual tops',
-        parent_id: data.find(c => c.slug === 'clothing')?.id
+            name: 'T-Shirts',
+            slug: 't-shirts',
+            description: 'Short-sleeved casual tops',
+            parent_id: data.find(c => c.slug === 'clothing')?.id
         },
         {
-        name: 'Hoodies',
-        slug: 'hoodies',
-        description: 'Sweatshirts with hoods',
-        parent_id: data.find(c => c.slug === 'clothing')?.id
+            name: 'Hoodies',
+            slug: 'hoodies',
+            description: 'Sweatshirts with hoods',
+            parent_id: data.find(c => c.slug === 'clothing')?.id
         },
         
       // Electronics subcategories
         {
-        name: 'Smartphones',
-        slug: 'smartphones',
-        description: 'Mobile phones and accessories',
-        parent_id: data.find(c => c.slug === 'electronics')?.id
+            name: 'Smartphones',
+            slug: 'smartphones',
+            description: 'Mobile phones and accessories',
+            parent_id: data.find(c => c.slug === 'electronics')?.id
         },
         {
-        name: 'Laptops',
-        slug: 'laptops',
-        description: 'Portable computers',
-        parent_id: data.find(c => c.slug === 'electronics')?.id
+            name: 'Laptops',
+            slug: 'laptops',
+            description: 'Portable computers',
+            parent_id: data.find(c => c.slug === 'electronics')?.id
         },
         
       // Virtual Goods subcategories
         {
-        name: 'NFTs',
-        slug: 'nfts',
-        description: 'Non-fungible tokens',
-        parent_id: data.find(c => c.slug === 'virtual-goods')?.id
+            name: 'NFTs',
+            slug: 'nfts',
+            description: 'Non-fungible tokens',
+            parent_id: data.find(c => c.slug === 'virtual-goods')?.id
         },
         {
-        name: 'Digital Art',
-        slug: 'digital-art',
-        description: 'Artwork in digital format',
-        parent_id: data.find(c => c.slug === 'virtual-goods')?.id
+            name: 'Digital Art',
+            slug: 'digital-art',
+            description: 'Artwork in digital format',
+            parent_id: data.find(c => c.slug === 'virtual-goods')?.id
         }
     ];
     
     // Insert subcategories
     const { data: subCategoriesData, error: subCategoryError } = await supabase
-        .from('categories')
-        .insert(subCategories)
-        .select();
+    .from('categories')
+    .insert(subCategories)
+    .select();
     
     if (subCategoryError) {
         throw new Error(`Error inserting subcategories: ${subCategoryError.message}`);
@@ -150,11 +150,11 @@ const seedCategories = async (): Promise<{ success: boolean; data?: Category[]; 
     return { success: true, data: allCategories };
     
     } catch (error) {
-    console.error('Error seeding categories:', error);
-    return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error occurred while seeding categories'
-    };
+        console.error('Error seeding categories:', error);
+        return { 
+            success: false, 
+            error: error instanceof Error ? error.message : 'Unknown error occurred while seeding categories'
+        };
     }
 };
 
@@ -163,51 +163,51 @@ const seedCategories = async (): Promise<{ success: boolean; data?: Category[]; 
  */
 const seedProducts = async (categories: Category[]): Promise<{ success: boolean; error?: string }> => {
     try {
-    // Check if products already exist
-    const { data: existingProducts } = await supabase
-        .from('products')
-        .select('*');
-    
-    if (existingProducts && existingProducts.length > 0) {
-        console.log('Products already exist, skipping seed.');
-        return { success: true };
-    }
-    
-    // Generate sample products
-    const sampleProducts = generateSampleProducts(categories);
-    
-    // Insert products in batches to avoid request size limitations
-    const batchSize = 10;
-    for (let i = 0; i < sampleProducts.length; i += batchSize) {
-        const batch = sampleProducts.slice(i, i + batchSize);
-        const { error } = await supabase
-        .from('products')
-        .insert(batch);
+        // Check if products already exist
+        const { data: existingProducts } = await supabase
+            .from('products')
+            .select('*');
         
-        if (error) {
-        throw new Error(`Error inserting products (batch ${i/batchSize + 1}): ${error.message}`);
+        if (existingProducts && existingProducts.length > 0) {
+            console.log('Products already exist, skipping seed.');
+            return { success: true };
         }
-    }
     
-    // Get the inserted products
-    const { data: products, error: fetchError } = await supabase
-        .from('products')
-        .select('*');
+        // Generate sample products
+        const sampleProducts = generateSampleProducts(categories);
+        
+        // Insert products in batches to avoid request size limitations
+        const batchSize = 10;
+        for (let i = 0; i < sampleProducts.length; i += batchSize) {
+            const batch = sampleProducts.slice(i, i + batchSize);
+            const { error } = await supabase
+            .from('products')
+            .insert(batch);
+            
+            if (error) {
+            throw new Error(`Error inserting products (batch ${i/batchSize + 1}): ${error.message}`);
+            }
+        }
     
-    if (fetchError) {
-        throw new Error(`Error fetching products after insert: ${fetchError.message}`);
-    }
+        // Get the inserted products
+        const { data: products, error: fetchError } = await supabase
+            .from('products')
+            .select('*');
+        
+        if (fetchError) {
+            throw new Error(`Error fetching products after insert: ${fetchError.message}`);
+        }
     
-    // Seed product images
-    await seedProductImages(products);
-    
-    return { success: true };
-    } catch (error) {
-    console.error('Error seeding products:', error);
-    return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error occurred while seeding products'
-    };
+        // Seed product images
+        await seedProductImages(products);
+        
+        return { success: true };
+        } catch (error) {
+            console.error('Error seeding products:', error);
+            return { 
+                success: false, 
+                error: error instanceof Error ? error.message : 'Unknown error occurred while seeding products'
+        };
     }
 };
 
@@ -367,11 +367,11 @@ const seedProductImages = async (products: Product[]): Promise<void> => {
       const imageCount = Math.floor(Math.random() * 3) + 1;
         
         return Array.from({ length: imageCount }, (_, i) => ({
-        product_id: product.id,
-        url: `https://via.placeholder.com/600x600?text=${encodeURIComponent(product.title)}`,
-        alt_text: `${product.title} image ${i + 1}`,
-        display_order: i,
-        is_primary: i === 0 // First image is primary
+            product_id: product.id,
+            url: `https://via.placeholder.com/600x600?text=${encodeURIComponent(product.title)}`,
+            alt_text: `${product.title} image ${i + 1}`,
+            display_order: i,
+            is_primary: i === 0 // First image is primary
         }));
     });
     

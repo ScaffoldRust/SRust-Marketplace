@@ -16,7 +16,6 @@ export const configureStorage = async (): Promise<{ success: boolean; error?: st
         
         const productImagesBucket = buckets?.find(bucket => bucket.name === 'product-images');
         
-        // Create the bucket if it doesn't exist
         if (!productImagesBucket) {
             const { error: createError } = await supabase
                 .storage
