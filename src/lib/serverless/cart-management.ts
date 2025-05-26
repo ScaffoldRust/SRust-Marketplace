@@ -22,7 +22,6 @@ export async function addToCart(
             throw createErrorResponse(validationError, ErrorCode.VALIDATION_ERROR);
         }
 
-        // Check if the product exists and has enough stock
         const { data: product, error: productError } = await supabase
         .from('products')
         .select('id, stock')
@@ -40,7 +39,6 @@ export async function addToCart(
             );
         }
 
-        // Check if the product is already in the cart
         const { data: existingItem, error: existingError } = await supabase
         .from('cart_items')
         .select('id, quantity')
@@ -51,7 +49,6 @@ export async function addToCart(
         if (!existingError && existingItem) {
         const newQuantity = existingItem.quantity + request.quantity;
         
-        // Ensure the new quantity doesn't exceed the available stock
         if (newQuantity > product.stock) {
             throw createErrorResponse(
                 `Cannot add more items. Only ${product.stock} items available in total.`,
@@ -83,7 +80,6 @@ export async function addToCart(
         }
         }
 
-        // Return the updated cart
         return await getCart(supabase, userId);
     } catch (error) {
         console.error('Error adding to cart:', error);
@@ -112,7 +108,6 @@ export async function addToCart(
         throw createErrorResponse('Quantity must be a positive number', ErrorCode.VALIDATION_ERROR);
         }
 
-        // Check if the cart item exists and belongs to the user
         const { data: cartItem, error: cartItemError } = await supabase
         .from('cart_items')
         .select('id, product_id')
@@ -124,7 +119,6 @@ export async function addToCart(
         throw createErrorResponse('Cart item not found', ErrorCode.NOT_FOUND);
         }
 
-        // Check if the product has enough stock
         const { data: product, error: productError } = await supabase
         .from('products')
         .select('stock')
@@ -142,7 +136,6 @@ export async function addToCart(
         );
         }
 
-        // Update the cart item
         const { error: updateError } = await supabase
         .from('cart_items')
         .update({
@@ -155,7 +148,6 @@ export async function addToCart(
         throw updateError;
         }
 
-        // Return the updated cart
         return await getCart(supabase, userId);
     } catch (error) {
         console.error('Error updating cart item:', error);
@@ -198,7 +190,6 @@ export async function addToCart(
         throw deleteError;
         }
 
-        // Return the updated cart
         return await getCart(supabase, userId);
     } catch (error) {
         console.error('Error removing from cart:', error);
@@ -216,7 +207,6 @@ export async function addToCart(
      */
     export async function clearCart(supabase: SupabaseClient, userId: string): Promise<CartResponse> {
     try {
-        // Delete all cart items for the user
         const { error: deleteError } = await supabase
         .from('cart_items')
         .delete()
@@ -272,7 +262,6 @@ export async function addToCart(
         throw cartError;
         }
 
-        // Calculate the total
         let total = 0;
         let itemCount = 0;
 
@@ -325,7 +314,6 @@ export async function addToCart(
     promoCode: string
     ): Promise<CartResponse & { discount: number }> {
     try {
-        // Get the promotion details
         const { data: promotion, error: promoError } = await supabase
         .from('promotions')
         .select('id, code, discount_percentage, active')
@@ -337,10 +325,8 @@ export async function addToCart(
         throw createErrorResponse('Invalid or expired promotion code', ErrorCode.NOT_FOUND);
         }
 
-        // Get the current cart
         const cart = await getCart(supabase, userId);
 
-        // Apply the discount
         const discountMultiplier = promotion.discount_percentage / 100;
         const discountAmount = cart.total * discountMultiplier;
         const discountedTotal = cart.total - discountAmount;

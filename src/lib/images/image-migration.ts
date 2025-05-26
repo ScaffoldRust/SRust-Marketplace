@@ -32,43 +32,39 @@ export const migrateProductImages = async (
         try {
             for (const imageData of imageDataList) {
         try {
-        // Fetch the image from the external URL
-        const response = await fetch(imageData.externalUrl);
-        
-        if (!response.ok) {
-            throw new Error(`Failed to fetch image: ${response.statusText}`);
-        }
-        
-        // Get content type and convert to blob
-        const contentType = response.headers.get('content-type') || 'image/jpeg';
-        const blob = await response.blob();
-        
-        // Create a File object from the blob
-        const fileName = imageData.externalUrl.split('/').pop() || 'image.jpg';
-        const file = new File([blob], fileName, { type: contentType });
-        
-        // Upload the image using our handler
-        const uploadResult = await uploadProductImage(
-            imageData.productId,
-            file,
-            imageData.altText,
-            imageData.displayOrder,
-            imageData.isPrimary
-        );
-        
-        if (!uploadResult.success) {
-            throw new Error(uploadResult.error);
-        }
-        
-        result.successCount++;
-        } catch (error) {
-        result.failureCount++;
-        result.errors = result.errors || [];
-        result.errors.push({
-            productId: imageData.productId,
-            url: imageData.externalUrl,
-            error: error instanceof Error ? error.message : 'Unknown error'
-        });
+            const response = await fetch(imageData.externalUrl);
+            
+            if (!response.ok) {
+                throw new Error(`Failed to fetch image: ${response.statusText}`);
+            }
+            
+            const contentType = response.headers.get('content-type') || 'image/jpeg';
+            const blob = await response.blob();
+            
+            const fileName = imageData.externalUrl.split('/').pop() || 'image.jpg';
+            const file = new File([blob], fileName, { type: contentType });
+            
+            const uploadResult = await uploadProductImage(
+                imageData.productId,
+                file,
+                imageData.altText,
+                imageData.displayOrder,
+                imageData.isPrimary
+            );
+            
+            if (!uploadResult.success) {
+                throw new Error(uploadResult.error);
+            }
+            
+            result.successCount++;
+            } catch (error) {
+            result.failureCount++;
+            result.errors = result.errors || [];
+            result.errors.push({
+                productId: imageData.productId,
+                url: imageData.externalUrl,
+                error: error instanceof Error ? error.message : 'Unknown error'
+            });
         }
     }
     

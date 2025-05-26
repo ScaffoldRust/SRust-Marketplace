@@ -1,4 +1,4 @@
-import { supabase } from '../supabase/client';
+import { superAdmin } from '@/lib/supabase/admin-client';
 import { PaginationParams, ProductFilter, Product, Database } from '../types/database.types';
 
 export const productApi = {
@@ -12,7 +12,7 @@ export const productApi = {
         const { page = 1, pageSize = 10 } = pagination;
         const offset = (page - 1) * pageSize;
         
-        let query = supabase
+        let query = superAdmin
         .from('products')
         .select('*', { count: 'exact' });
         
@@ -40,11 +40,9 @@ export const productApi = {
         const order = filter.sortOrder || 'asc';
         query = query.order(filter.sortBy, { ascending: order === 'asc' });
         } else {
-        // Default sort by creation date, newest first
         query = query.order('created_at', { ascending: false });
         }
         
-        // Apply pagination
         query = query.range(offset, offset + pageSize - 1);
         
         const { data, error, count } = await query;
@@ -56,7 +54,7 @@ export const productApi = {
      * Get product by ID
      */
     async getProductById(id: string): Promise<{ data: Product | null; error: Error | null }> {
-        const { data, error } = await supabase
+        const { data, error } = await superAdmin
         .from('products')
         .select('*')
         .eq('id', id)
@@ -69,7 +67,7 @@ export const productApi = {
      * Get product by slug
      */
     async getProductBySlug(slug: string): Promise<{ data: Product | null; error: Error | null }> {
-        const { data, error } = await supabase
+        const { data, error } = await superAdmin
         .from('products')
         .select('*')
         .eq('slug', slug)
@@ -88,7 +86,7 @@ export const productApi = {
         const { page = 1, pageSize = 10 } = pagination;
         const offset = (page - 1) * pageSize;
         
-        const { data, error, count } = await supabase
+        const { data, error, count } = await superAdmin
         .from('products')
         .select('*', { count: 'exact' })
         .eq('category', categoryId)
@@ -104,8 +102,7 @@ export const productApi = {
         categorySlug: string,
         pagination: PaginationParams = { page: 1, pageSize: 10 }
     ): Promise<{ data: Product[] | null; count: number | null; error: Error | null }> {
-        // First get the category ID from the slug
-        const { data: category } = await supabase
+        const { data: category } = await superAdmin
         .from('categories')
         .select('id')
         .eq('slug', categorySlug)
@@ -115,7 +112,6 @@ export const productApi = {
         return { data: null, count: null, error: new Error('Category not found') };
         }
         
-        // Then get products by the category ID
         return await this.getProductsByCategory(category.id, pagination);
     },
     
@@ -129,7 +125,7 @@ export const productApi = {
     ): Promise<{ data: Product[] | null; error: Error | null }> {
         const { page = 1, pageSize = 10 } = pagination;
         
-        const { data, error } = await supabase.rpc('search_products', {
+        const { data, error } = await superAdmin.rpc('search_products', {
         search_query: query,
         category_id: filter.category,
         min_price: filter.minPrice,
@@ -146,7 +142,7 @@ export const productApi = {
      * Get featured products
      */
     async getFeaturedProducts(limit: number = 8): Promise<{ data: Product[] | null; error: Error | null }> {
-        const { data, error } = await supabase
+        const { data, error } = await superAdmin
         .from('products')
         .select('*')
         .eq('featured', true)
@@ -160,15 +156,13 @@ export const productApi = {
      * Get related products based on category
      */
     async getRelatedProducts(productId: string, limit: number = 4): Promise<{ data: Product[] | null; error: Error | null }> {
-        // Get the current product to find its category
         const { data: product } = await this.getProductById(productId);
         
         if (!product) {
         return { data: null, error: new Error('Product not found') };
         }
         
-        // Get products from the same category, excluding the current product
-        const { data, error } = await supabase
+        const { data, error } = await superAdmin
         .from('products')
         .select('*')
         .eq('category', product.category)
@@ -183,7 +177,7 @@ export const productApi = {
      * Create a new product
      */
     async createProduct(product: Database['public']['Tables']['products']['Insert']): Promise<{ data: Product | null; error: Error | null }> {
-        const { data, error } = await supabase
+        const { data, error } = await superAdmin
         .from('products')
         .insert([product])
         .select()
@@ -196,7 +190,7 @@ export const productApi = {
      * Update an existing product
      */
     async updateProduct(id: string, updates: Database['public']['Tables']['products']['Update']): Promise<{ data: Product | null; error: Error | null }> {
-        const { data, error } = await supabase
+        const { data, error } = await superAdmin
         .from('products')
         .update(updates)
         .eq('id', id)
@@ -210,7 +204,7 @@ export const productApi = {
      * Delete a product
      */
     async deleteProduct(id: string): Promise<{ error: Error | null }> {
-        const { error } = await supabase
+        const { error } = await superAdmin
         .from('products')
         .delete()
         .eq('id', id);

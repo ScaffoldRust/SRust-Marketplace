@@ -7,17 +7,14 @@ AS $$
 DECLARE
     current_stock INTEGER;
     BEGIN
-    -- Get current stock level
     SELECT stock INTO current_stock
     FROM products
     WHERE id = update_stock.product_id;
     
-    -- Check if there's enough stock
     IF current_stock < update_stock.quantity THEN
         RETURN false;
     END IF;
     
-    -- Update the stock
     UPDATE products
     SET stock = stock - update_stock.quantity
     WHERE id = update_stock.product_id;
@@ -25,7 +22,6 @@ DECLARE
     RETURN true;
 END;
 $$;
-
 
 -- Create a function to check if a product is in stock
 CREATE OR REPLACE FUNCTION is_product_in_stock(

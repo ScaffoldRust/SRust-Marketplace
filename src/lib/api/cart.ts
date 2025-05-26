@@ -26,7 +26,6 @@ export const cartApi = {
      * Add product to cart
      */
     async addToCart(userId: string, productId: string, quantity: number = 1): Promise<{ data: CartItem | null; error: Error | null }> {
-        // Check if the product is already in the cart
         const { data: existingItem } = await supabase
         .from('cart_items')
         .select('id, quantity')
@@ -35,7 +34,6 @@ export const cartApi = {
         .maybeSingle();
         
         if (existingItem) {
-        // Update quantity if product is already in cart
         const newQuantity = existingItem.quantity + quantity;
         return await this.updateCartItemQuantity(userId, productId, newQuantity);
         } else {
@@ -54,7 +52,6 @@ export const cartApi = {
      * Update cart item quantity
      */
     async updateCartItemQuantity(userId: string, productId: string, quantity: number): Promise<{ data: CartItem | null; error: Error | null }> {
-        // Check stock availability
         const { data: product } = await supabase
         .from('products')
         .select('stock')

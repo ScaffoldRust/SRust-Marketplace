@@ -43,7 +43,6 @@ export const productImageApi = {
         const fileName = `${productId}/${Date.now()}.${fileExt}`;
         const filePath = `products/${fileName}`;
         
-        // Upload file to storage
         const { error: uploadError } = await supabase
         .storage
         .from('product-images')
@@ -53,7 +52,6 @@ export const productImageApi = {
         return { data: null, error: uploadError as Error };
         }
         
-        // Get public URL
         const { data: publicUrlData } = supabase
         .storage
         .from('product-images')
@@ -61,7 +59,6 @@ export const productImageApi = {
         
         const url = publicUrlData.publicUrl;
         
-        // Create database record
         const { data, error } = await supabase
         .from('product_images')
         .insert([{
@@ -81,7 +78,6 @@ export const productImageApi = {
      * Delete a product image
      */
     async deleteProductImage(imageId: string): Promise<{ error: Error | null }> {
-        // Get image details first
         const { data: image } = await supabase
         .from('product_images')
         .select('url')
@@ -89,17 +85,14 @@ export const productImageApi = {
         .single();
         
         if (image) {
-        // Extract path from URL
         const path = image.url.split('/').slice(-2).join('/');
         
-        // Delete from storage
         await supabase
             .storage
             .from('product-images')
             .remove([`products/${path}`]);
         }
         
-        // Delete from database
         const { error } = await supabase
         .from('product_images')
         .delete()

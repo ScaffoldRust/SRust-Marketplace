@@ -33,7 +33,7 @@ export const uploadProductImage = async (
         };
     }
     
-    const maxSize = 5 * 1024 * 1024; // 5MB
+    const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
         return {
         success: false,
@@ -41,13 +41,11 @@ export const uploadProductImage = async (
         };
     }
     
-    // Create a unique filename
     const fileExt = file.name.split('.').pop();
     const timestamp = Date.now();
     const fileName = `${timestamp}.${fileExt}`;
     const filePath = `products/${productId}/${fileName}`;
     
-    // Upload file to storage
     const { error: uploadError } = await supabase
         .storage
         .from('product-images')
@@ -65,7 +63,6 @@ export const uploadProductImage = async (
     
     const url = publicUrlData.publicUrl;
     
-    // If this is primary, update other images to be non-primary
     if (isPrimary) {
         await supabase
         .from('product_images')
@@ -74,7 +71,6 @@ export const uploadProductImage = async (
         .eq('is_primary', true);
     }
     
-    // Create database record
     const { data, error } = await supabase
         .from('product_images')
         .insert([{
@@ -121,7 +117,7 @@ export const deleteProductImage = async (
         .from('product_images')
         .select('url')
         .eq('id', imageId)
-        .eq('product_id', productId) // Security check
+        .eq('product_id', productId)
         .single();
     
     if (fetchError) {
@@ -140,7 +136,6 @@ export const deleteProductImage = async (
     const pathParts = url.pathname.split('/');
     const filePath = pathParts.slice(pathParts.indexOf('product-images') + 1).join('/');
     
-    // Delete from database first (if this fails, we keep the file)
     const { error: deleteError } = await supabase
         .from('product_images')
         .delete()
@@ -151,7 +146,6 @@ export const deleteProductImage = async (
         throw new Error(`Error deleting image record: ${deleteError.message}`);
     }
     
-    // Then delete from storage
     const { error: storageError } = await supabase
         .storage
         .from('product-images')
@@ -161,7 +155,6 @@ export const deleteProductImage = async (
         console.warn(`Warning: Deleted database record but failed to delete file: ${storageError.message}`);
     }
     
-    // If this was a primary image, set a new primary
     const { data: remainingImages } = await supabase
         .from('product_images')
         .select('id')
@@ -194,10 +187,8 @@ export const getTransformedImageUrl = (
     options: ImageTransformOptions
 ): string => {
     try {
-    // Parse the original URL
     const url = new URL(originalUrl);
     
-    // Add transformation parameters to URL
     if (options.width) url.searchParams.append('width', options.width.toString());
     if (options.height) url.searchParams.append('height', options.height.toString());
     if (options.quality) url.searchParams.append('quality', options.quality.toString());
@@ -232,7 +223,6 @@ export const updateProductImage = async (
         .neq('id', imageId);
     }
     
-    // Update the image record
     const { data, error } = await supabase
         .from('product_images')
         .update(updates)
@@ -296,7 +286,6 @@ export const reorderProductImages = async (
     imageOrders: Array<{ id: string; displayOrder: number }>
 ): Promise<{ success: boolean; error?: string }> => {
     try {
-    // Start a transaction for updating multiple records
     const updatePromises = imageOrders.map(({ id, displayOrder }) => {
         return supabase
         .from('product_images')
