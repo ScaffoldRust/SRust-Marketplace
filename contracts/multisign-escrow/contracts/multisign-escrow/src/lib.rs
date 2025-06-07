@@ -1,5 +1,5 @@
-
 #![no_std]
-mod escrow;
 mod datatypes;
+mod escrow;
+
 mod test;

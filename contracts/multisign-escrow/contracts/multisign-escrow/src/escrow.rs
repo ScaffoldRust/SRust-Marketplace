@@ -1,8 +1,7 @@
-
 use crate::datatypes::{Datakey, EscrowError, EscrowState, EscrowStatus};
 use soroban_sdk::{
-    contract, contractimpl, 
-    token::{self,},
+    contract, contractimpl,
+    token::{self},
     Address, Env, Map, Symbol,
 };
 
@@ -12,16 +11,7 @@ pub struct EscrowContract;
 #[contractimpl]
 impl EscrowContract {
     /// Initializes the escrow contract.
-    ///
-    /// # Arguments
-    /// * `env` - The contract environment.
-    /// * `buyer` - The address of the buyer.
-    /// * `seller` - The address of the seller.
-    /// * `mediator` - An optional address of a mediator.
-    /// * `asset` - The address of the asset being used for the escrow.
-    /// * `amount` - The amount of the asset to be held in escrow.
-    /// * `required_approvals` - The number of approvals required for fund release (e.g., 2 for 2-of-3).
-    /// * `deadline` - The Unix timestamp after which the buyer can unilaterally refund if funds are not released.
+
     pub fn initialize(
         env: Env,
         buyer: Address,
@@ -67,9 +57,7 @@ impl EscrowContract {
     }
 
     /// Allows the buyer to deposit funds into the escrow.
-    ///
-    /// # Arguments
-    /// * `env` - The contract environment.
+
     pub fn deposit(env: Env) -> Result<(), EscrowError> {
         let mut state: EscrowState = env
             .storage()
@@ -97,11 +85,6 @@ impl EscrowContract {
         Ok(())
     }
 
-    /// Allows a designated party (buyer, seller, or mediator) to approve the transaction.
-    ///
-    /// # Arguments
-    /// * `env` - The contract environment.
-    /// * `party` - The address of the party providing approval.
     pub fn approve(env: Env, party: Address) -> Result<(), EscrowError> {
         party.require_auth();
 
@@ -141,9 +124,7 @@ impl EscrowContract {
     }
 
     /// Releases funds to the seller once the required number of approvals are met.
-    ///
-    /// # Arguments
-    /// * `env` - The contract environment.
+
     pub fn release(env: Env) -> Result<(), EscrowError> {
         let mut state: EscrowState = env
             .storage()
@@ -159,7 +140,7 @@ impl EscrowContract {
             return Err(EscrowError::NotEnoughApprovals);
         }
 
-        state.status = EscrowStatus::Released; // Change status before transfer to prevent re-entrancy issues
+        state.status = EscrowStatus::Released;
         env.storage().instance().set(&Datakey::EscrowState, &state);
 
         let token_client = token::Client::new(&env, &state.asset);
@@ -177,10 +158,6 @@ impl EscrowContract {
         Ok(())
     }
 
-    /// Refunds funds to the buyer if the transaction cannot proceed (e.g., timeout or dispute).
-    ///
-    /// # Arguments
-    /// * `env` - The contract environment.
     pub fn refund(env: Env) -> Result<(), EscrowError> {
         let mut state: EscrowState = env
             .storage()
@@ -192,17 +169,9 @@ impl EscrowContract {
             return Err(EscrowError::InvalidStatus);
         }
 
-        // Only buyer can initiate a refund if deadline is passed
-        // Or if the buyer initiates it before approvals are met and deadline has passed.
-        // For simplicity, we'll allow buyer to refund if deadline is passed AND approvals are NOT met.
-        // If approvals are met, it should be released.
-
         let current_timestamp = env.ledger().timestamp();
 
         if current_timestamp < state.deadline && state.approved_count < state.required_approvals {
-            // If deadline not reached, only buyer can refund if they explicitly call for it
-            // and no sufficient approvals are met. This requires an additional flag or a
-            // different refund mechanism. For now, we'll enforce the deadline.
             return Err(EscrowError::DeadlineNotReached);
         }
 
@@ -221,9 +190,7 @@ impl EscrowContract {
     }
 
     /// Gets the current state of the escrow.
-    ///
-    /// # Arguments
-    /// * `env` - The contract environment.
+
     pub fn get_state(env: Env) -> Result<EscrowState, EscrowError> {
         env.storage()
             .instance()

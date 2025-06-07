@@ -1,5 +1,5 @@
-use soroban_sdk::{contracttype, Address, Map, contracterror};
 use core::fmt;
+use soroban_sdk::{contracterror, contracttype, Address, Map};
 
 #[contracttype]
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -40,8 +40,8 @@ pub enum EscrowError {
     InvalidStatus = 4,
     AlreadyApproved = 5,
     NotEnoughApprovals = 6,
-    DeadlineNotReached =7 ,
-    AlreadyInitialized = 8
+    DeadlineNotReached = 7,
+    AlreadyInitialized = 8,
 }
 
 impl fmt::Display for EscrowError {
@@ -53,8 +53,8 @@ impl fmt::Display for EscrowError {
             EscrowError::InvalidStatus => write!(f, "This operation is not allowed"),
             EscrowError::AlreadyApproved => write!(f, "Arithmetic operation failed"),
             EscrowError::NotEnoughApprovals => write!(f, "Already initialized"),
-            EscrowError::DeadlineNotReached  => write!(f , "Dead line not reached"),
-            EscrowError::AlreadyInitialized => write!(f , "already initilized")
+            EscrowError::DeadlineNotReached => write!(f, "Dead line not reached"),
+            EscrowError::AlreadyInitialized => write!(f, "already initilized"),
         }
     }
 }
