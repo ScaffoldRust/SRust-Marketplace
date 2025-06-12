@@ -127,4 +127,62 @@ mod test_ {
         assert_eq!(event_seller, seller);
         assert_eq!(event_total_amount, 1000);
     }
+
+    #[test]
+    fn test_create_transaction() {
+        let (env, client, buyer, seller, _) = setup_env();
+        let total_amount = 1000;
+        let milestone_percentages = vec![&env, 50, 50];
+        let milestone_descriptions = vec![&env, symbol_short!("design"), symbol_short!("develop")];
+        env.mock_all_auths();
+
+        let tx_id = client.create_transaction(
+            &buyer,
+            &seller,
+            &total_amount,
+            &milestone_percentages,
+            &milestone_descriptions,
+        );
+
+        let events = get_contract_events(&env, &client);
+        log!(&env, "Events in test_create_transaction: {:?}", events);
+
+        assert_eq!(tx_id, 1, "Transaction ID should be 1");
+
+        let transaction: Transactions = env.as_contract(&client.address, || {
+            env.storage()
+                .persistent()
+                .get(&DataKey::Transaction(tx_id))
+                .unwrap()
+        });
+        assert_eq!(transaction.buyer, buyer);
+        assert_eq!(transaction.seller, seller);
+        assert_eq!(transaction.total_amount, total_amount);
+        assert_eq!(transaction.milestones.len(), 2);
+        assert_eq!(transaction.milestones.get_unchecked(0).amount, 500);
+        assert_eq!(transaction.milestones.get_unchecked(1).amount, 500);
+        let new_tx_event = events.iter().find(|event| {
+            let contract_address_val: Val = client.address.clone().into_val(&env);
+            event.0 == Address::from_val(&env, &contract_address_val)
+                && !event.1.is_empty()
+                && Symbol::from_val(&env, &event.1.get(0).unwrap()) == symbol_short!("new_tx")
+        });
+
+        assert!(
+            new_tx_event.is_some(),
+            "Expected a 'new_tx' event to be emitted."
+        );
+
+        let event = new_tx_event.unwrap();
+        let topics = &event.1;
+        let topic0: Symbol = Symbol::from_val(&env, &topics.get(0).unwrap());
+        let topic1: u32 = u32::from_val(&env, &topics.get(1).unwrap());
+
+        assert_eq!(
+            topic0,
+            symbol_short!("new_tx"),
+            "Topic 0 should be 'new_tx'"
+        );
+        assert_eq!(topic1, tx_id, "Topic 1 should be the transaction ID");
+    }
 }
