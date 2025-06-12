@@ -8,14 +8,11 @@ pub struct StaggeredPaymentContract;
 #[contractimpl]
 impl StaggeredPaymentContract {
     pub fn initialize(env: Env, payment_token: Address) {
-        // Ensure contract is not already initialized
         let storage = env.storage().persistent();
         let payment_token_option: Option<Address> = storage.get(&DataKey::PaymentToken);
 
-        // Handle the Option directly
         match payment_token_option {
             None => {
-                // Contract not initialized - proceed with initialization
                 storage.set(&DataKey::PaymentToken, &payment_token);
                 storage.set(&DataKey::TransactionCount, &0u32);
                 env.events()
@@ -58,13 +55,13 @@ impl StaggeredPaymentContract {
         for i in 0..milestone_percentages.len() {
             let percentage = milestone_percentages
                 .get(i)
-                .expect("Failed to get milestone percentage"); // Handle potential out-of-bounds access
+                .expect("Failed to get milestone percentage");
             let description = milestone_descriptions
                 .get(i)
-                .expect("Failed to get milestone description"); // Handle potential out-of-bounds access
+                .expect("Failed to get milestone description");
             let amount = (total_amount * percentage) / 100;
             milestones.push_back(Milestone {
-                id: i, // Cast i to u32 as the Milestone id seems to be u32
+                id: i,
                 amount,
                 description,
                 completed: false,
@@ -73,7 +70,6 @@ impl StaggeredPaymentContract {
             });
         }
 
-        // Create transaction
         let transaction = Transactions {
             buyer: buyer.clone(),
             seller: seller.clone(),
@@ -83,12 +79,10 @@ impl StaggeredPaymentContract {
             is_active: true,
         };
 
-        // Store transaction
         env.storage()
             .persistent()
             .set(&DataKey::Transaction(tx_id), &transaction);
 
-        // Emit event
         env.events().publish(
             (symbol_short!("new_tx"), tx_id),
             (buyer, seller, total_amount),
@@ -97,7 +91,6 @@ impl StaggeredPaymentContract {
         tx_id
     }
 
-    // Add new function to release funds
     pub fn release_funds(env: Env, tx_id: u32, milestone_id: u32, amount: i128) {
         let mut transaction = Self::get_transaction(&env, tx_id);
         assert!(transaction.is_active, "Transaction is not active");
@@ -436,77 +429,3 @@ impl StaggeredPaymentContract {
             .expect("Payment token not set")
     }
 }
-
-// pub fn create_transaction(
-//     env: Env,
-//     buyer: Address,
-//     seller: Address,
-//     total_amount: i128,
-//     milestone_amounts: Vec<i128>,
-//     milestone_descriptions: Vec<Symbol>,
-// ) -> u32 {
-//     buyer.require_auth();
-//     assert!(total_amount > 0, "Total amount must be positive");
-//     assert!(
-//         milestone_amounts.len() == milestone_descriptions.len(),
-//         "Mismatching milestones and descriptions"
-//     );
-//     assert!(
-//         !milestone_amounts.is_empty(),
-//         "At least one milestone required"
-//     );
-//
-//     // Verify total milestone amounts match total_amount
-//     let sum: i128 = milestone_amounts.iter().sum();
-//     assert!(
-//         sum == total_amount,
-//         "Milestone amounts must sum to total amount"
-//     );
-//
-//     // Note: Symbol length check removed due to SDK 22.0.0 limitations
-//     // symbol_short! enforces ≤ 9 characters, Symbol::new allows ≤ 32
-//     // test_long_description will be adjusted
-//
-//     // Transfer funds to escrow (simulated)
-//     let tx_id = Self::increment_tx_count(&env);
-//
-//     // Create milestones
-//     let mut milestones = vec![&env];
-//     for i in 0..milestone_amounts.len() {
-//         milestones.push_back(Milestone {
-//             id: i,
-//             amount: milestone_amounts
-//                 .get(i)
-//                 .expect("Failed to get milestone amount"),
-//             description: milestone_descriptions
-//                 .get(i)
-//                 .expect("Failed to get milestone description"),
-//             completed: false,
-//             approved: false,
-//             disputed: false,
-//         });
-//     }
-//
-//     // Create transaction
-//     let transaction = Transactions {
-//         buyer: buyer.clone(),
-//         seller: seller.clone(),
-//         total_amount,
-//         milestones,
-//         created_at: env.ledger().timestamp(),
-//         is_active: true,
-//     };
-//
-//     // Store transaction
-//     env.storage()
-//         .persistent()
-//         .set(&DataKey::Transaction(tx_id), &transaction);
-//
-//     // Emit event
-//     env.events().publish(
-//         (symbol_short!("new_tx"), tx_id),
-//         (buyer, seller, total_amount),
-//     );
-//     log!(&env, "Emitted new_tx event for tx_id: {}", tx_id);
-//     tx_id
-// }
