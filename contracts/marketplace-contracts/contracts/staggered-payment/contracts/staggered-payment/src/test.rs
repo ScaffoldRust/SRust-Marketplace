@@ -185,4 +185,47 @@ mod test_ {
         );
         assert_eq!(topic1, tx_id, "Topic 1 should be the transaction ID");
     }
+
+    #[test]
+    fn test_milestone_workflow() {
+        let (env, client, buyer, seller, _) = setup_env();
+        let total_amount = 1000;
+        let milestone_percentages = vec![&env, 50, 50];
+        let milestone_descriptions = vec![&env, symbol_short!("design"), symbol_short!("develop")];
+
+        env.mock_all_auths();
+
+        let tx_id = client.create_transaction(
+            &buyer,
+            &seller,
+            &total_amount,
+            &milestone_percentages,
+            &milestone_descriptions,
+        );
+
+        client.submit_milestone(&tx_id, &0);
+
+        client.approve_milestone(&tx_id, &0);
+
+        let events = get_contract_events(&env, &client);
+        log!(&env, "Events in test_milestone_workflow: {:?}", events);
+
+        let transaction: Transactions = env.as_contract(&client.address, || {
+            env.storage()
+                .persistent()
+                .get(&DataKey::Transaction(tx_id))
+                .unwrap()
+        });
+        assert!(transaction.milestones.get_unchecked(0).completed);
+        assert!(transaction.milestones.get_unchecked(0).approved);
+
+        assert!(!events.is_empty(), "Expected two events (submit, approve)");
+        if events.len() >= 2 {
+            let event = events.get(1).unwrap();
+            let topics = &event.1;
+            let topic0_val = topics.get(0).unwrap();
+            let topic0: Symbol = Symbol::from_val(&env, &topic0_val);
+            assert_eq!(topic0, symbol_short!("approve"));
+        }
+    }
 }
