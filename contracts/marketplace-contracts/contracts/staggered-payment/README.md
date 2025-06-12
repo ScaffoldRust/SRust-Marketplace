@@ -102,8 +102,6 @@ The project includes a comprehensive suite of tests to ensure contract reliabili
 
 ### Integration Testing
 
-(Future scope, beyond unit tests)
-
 - Simulate full transaction cycles within a test marketplace environment.
 
 - Verify interaction between buyers, sellers, and the escrow contract in a multi-contract setup.
