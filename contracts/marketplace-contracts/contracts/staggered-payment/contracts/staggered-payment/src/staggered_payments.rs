@@ -91,7 +91,6 @@ impl StaggeredPaymentContract {
         tx_id
     }
 
-    // Add new function to release funds
     pub fn release_funds(env: Env, tx_id: u32, milestone_id: u32, amount: i128) {
         let mut transaction = Self::get_transaction(&env, tx_id);
         assert!(transaction.is_active, "Transaction is not active");
