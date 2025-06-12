@@ -327,4 +327,25 @@ mod test_ {
             assert_eq!(topic0, symbol_short!("tx_done"));
         }
     }
+
+    #[test]
+    #[should_panic(expected = "Milestone not found")]
+    fn test_invalid_milestone() {
+        let (env, client, buyer, seller, _) = setup_env();
+        let total_amount = 1000;
+        let milestone_percentages = vec![&env, 50, 50];
+        let milestone_descriptions = vec![&env, symbol_short!("design"), symbol_short!("develop")];
+
+        env.mock_all_auths();
+
+        let tx_id = client.create_transaction(
+            &buyer,
+            &seller,
+            &total_amount,
+            &milestone_percentages,
+            &milestone_descriptions,
+        );
+
+        client.submit_milestone(&tx_id, &999);
+    }
 }
