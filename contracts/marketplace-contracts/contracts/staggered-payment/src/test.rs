@@ -46,13 +46,9 @@ mod test_ {
         env.mock_all_auths();
         let admin = Address::generate(&env);
 
-        // Get both the token address and the StellarAssetClient from create_token_contract
         let (token_address, token_client) = create_token_contract(&env, &admin);
         let contract_id = env.register(StaggeredPaymentContract, ());
 
-        // Create a buyer Address
-        let _buyer = soroban_sdk::Address::generate(&env);
-        // Pass the token_client (StellarAssetClient) instead of _buyer (Address)
         let buyer = create_user(&env, &token_client, &admin, 10000);
         let contract = StaggeredPaymentContractClient::new(&env, &contract_id);
         contract.initialize(&token_address);
@@ -89,14 +85,11 @@ mod test_ {
 
         assert!(tx_id >= 1, "Transaction ID should be 1");
 
-        // Find the 'new_tx' event specifically
         let new_tx_event = events.iter().find(|event| {
-            // Check if the event source is the contract
             let contract_address_val: Val = client.address.clone().into_val(&env);
-            event.0 == Address::from_val(&env, &contract_address_val) &&
-            // Check if topics start with 'new_tx'
-            !event.1.is_empty() &&
-            Symbol::from_val(&env, &event.1.get(0).unwrap()) == symbol_short!("new_tx")
+            event.0 == Address::from_val(&env, &contract_address_val)
+                && !event.1.is_empty()
+                && Symbol::from_val(&env, &event.1.get(0).unwrap()) == symbol_short!("new_tx")
         });
 
         assert!(
