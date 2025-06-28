@@ -30,10 +30,4 @@ pub enum DataKey {
     MilestoneRelease(u32, u32), // Tracks released funds per milestone
 }
 
-// #[contracttype]
-// pub enum DataKey {
-//     Transaction(u32),
-//     TransactionCount,
-// }
-
 pub const TIMEOUT: u64 = 604_800;
