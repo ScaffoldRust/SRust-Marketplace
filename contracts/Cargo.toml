@@ -1,7 +1,15 @@
 [workspace]
 resolver = "2"
 members = [
-  "contracts/*",
+  "deferred-settlement/contracts/deferred-settlement",
+  "marketplace-contracts/contracts/conditional-refund-contract",
+  "marketplace-contracts/contracts/milestone-payment",
+  "marketplace-contracts/contracts/staggered-payment", 
+  "marketplace-contracts/contracts/escrow-arbitration-contract",
+  "marketplace-contracts/contracts/mutual_cancellation",
+  "marketplace-contracts/contracts/timelock",
+
+  # "multisign-escrow/contracts/multisign-escrow",
 ]
 
 [workspace.dependencies]
