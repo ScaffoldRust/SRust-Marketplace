@@ -8,6 +8,7 @@ members = [
   "marketplace-contracts/contracts/escrow-arbitration-contract",
   "marketplace-contracts/contracts/mutual_cancellation",
   "marketplace-contracts/contracts/timelock",
+  "marketplace-contracts/contracts/installment_payment_contract"
 
   # "multisign-escrow/contracts/multisign-escrow",
 ]
