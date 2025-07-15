@@ -3,7 +3,7 @@
 
 mod test;
 
-use soroban_sdk::{contract, contracttype, contracterror, contractimpl, symbol_short, Address, Env, Symbol, Vec, String };
+use soroban_sdk::{contract, contracterror, contractimpl, contracttype, symbol_short, token::{self, TokenClient}, Address, Env, String, Symbol, Vec };
 // use soroban_sdk::testutils::arbitrary::std::println;
 
 const ADMIN: Symbol = symbol_short!("i_p_admin"); // length cannot be more than 9, hence, i = installment, p = payment,
@@ -22,6 +22,7 @@ pub enum ContractError {
     InvalidTimestamp = 5,
     InvalidAgreementId = 6,
     NotAuthorized = 7,
+    AgreementNotFOund = 8,
 
 }
 #[contract]
@@ -31,7 +32,7 @@ pub struct InstallmentPayment;
 #[contracttype]
 pub struct PaidHistory {
     pub amount: u128,
-    pub timeline: u128,
+    pub timeline: u64,
 }
 
 
@@ -136,6 +137,39 @@ impl InstallmentPayment {
     }
     
     pub fn pay_on_installment(env: Env, buyer_address: Address, installment_amount: u128, agreement_id: u128) -> Result<bool, ContractError> {
+        let agreement_key: (u128 ,Symbol, ) = (agreement_id, AGREEMENT);
+
+        let installment_agreement_optional: Option<InstallmentAgreement> = env.storage().persistent().get(&agreement_key);
+        if &installment_agreement_optional.is_none() == &true {
+            return Err(ContractError::AgreementNotFOund);
+        }
+
+        let mut installment_agreement: InstallmentAgreement = installment_agreement_optional.unwrap();
+
+        assert!(&installment_agreement.is_accepted, "agreement not accepted yet");
+        assert!(!&installment_agreement.is_canceled, "agreement has been cancelled");
+        assert!(!&installment_agreement.is_finalized, "agreement has been finalized");
+        assert!(&installment_agreement.deadline > &env.ledger().timestamp());
+
+        assert!(installment_amount > 0, "amount cannot be zero");
+
+        let token_address: Address = installment_agreement.token;
+
+        // create the token client
+        let token_contract: TokenClient = token::TokenClient::new(&env, &token_address);
+        let user_balance: i128 = token_contract.balance(&buyer_address);
+
+        assert!(user_balance >= installment_amount as i128, "insufficient balance");
+
+        token_contract.transfer(&buyer_address, &env.current_contract_address(), &(installment_amount as i128));
+
+        // create the payment history
+        let payment_history: PaidHistory = PaidHistory { amount: installment_amount, timeline: env.ledger().timestamp() };
+        // update the agreement 
+        
+        installment_agreement.paid_history.push_back(payment_history);
+        installment_agreement.amount_paid += installment_amount;
+
         Ok(true)
     }
 
