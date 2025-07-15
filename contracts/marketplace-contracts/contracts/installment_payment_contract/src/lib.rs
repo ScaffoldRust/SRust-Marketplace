@@ -3,8 +3,7 @@
 
 mod test;
 
-// use core::ops::Add;
-use soroban_sdk::{contract, contracterror, contractimpl, symbol_short, Address, Env, Symbol};
+use soroban_sdk::{contract, contracttype, contracterror, contractimpl, symbol_short, Address, Env, Symbol};
 use soroban_sdk::testutils::arbitrary::std::println;
 
 const ADMIN: Symbol = symbol_short!("i_p_admin"); // length cannot be more than 9, hence, i = installment, p = payment,
@@ -18,6 +17,13 @@ pub enum ContractError {
 }
 #[contract]
 pub struct InstallmentPayment;
+
+
+
+#[contracttype]
+pub struct InstallmentAgreement {
+
+}
 
 
 
@@ -40,5 +46,9 @@ impl InstallmentPayment {
         admin.require_auth();
         env.storage().persistent().set(&ADMIN, &admin);
         Ok(admin)
+    }
+    
+    pub fn pay_on_installment(env: Env, buyer_address: Address, installment_amount: u128) -> Result<bool, ContractError> {
+        Ok(true)
     }
 }
