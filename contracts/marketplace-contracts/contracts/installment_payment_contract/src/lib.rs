@@ -160,7 +160,7 @@ impl InstallmentPayment {
         assert!(!&installment_agreement.is_canceled);
         assert!(!&installment_agreement.is_finalized);
         
-        installment_agreement.seller = seller;
+        installment_agreement.is_accepted = accept_agreement;
         
         
         env.storage().persistent().set(&agreement, &installment_agreement);
@@ -170,5 +170,12 @@ impl InstallmentPayment {
 
     pub fn cancel_and_refund_agreement(env: Env, address: Address, agreement_id: u128) -> Result<bool, ContractError> {
         Ok(true)
+    }
+
+    pub fn get_installment_agreement(env: Env, agreement_id: u128) -> Option<InstallmentAgreement> {
+
+        // Err(String::from_str(&env, ""))
+        let agreement_key: (u128 ,Symbol, ) = (agreement_id, AGREEMENT);
+        env.storage().persistent().get(&agreement_key)
     }
 }
