@@ -3,7 +3,7 @@
 
 mod test;
 
-use soroban_sdk::{contract, contracttype, contracterror, contractimpl, symbol_short, Address, Env, Symbol};
+use soroban_sdk::{contract, contracttype, contracterror, contractimpl, symbol_short, Address, Env, Symbol, Vec, String };
 use soroban_sdk::testutils::arbitrary::std::println;
 
 const ADMIN: Symbol = symbol_short!("i_p_admin"); // length cannot be more than 9, hence, i = installment, p = payment,
@@ -19,10 +19,37 @@ pub enum ContractError {
 pub struct InstallmentPayment;
 
 
+#[contracttype]
+pub struct PaidHistory {
+    pub amount: u128,
+    pub timeline: u128,
+}
+
 
 #[contracttype]
 pub struct InstallmentAgreement {
+    pub id: u128,
+    pub buyer: Address,
+    pub seller: Address,
 
+    pub is_accepted: bool,
+    pub creator: Address,
+
+    pub amount_paid: u128,
+    pub paid_history: Vec<PaidHistory>,
+    pub total_amount: u128,
+
+    pub deadline: u128,
+
+    pub escrow_id: u128,
+    pub escrow_address: u128,
+
+    pub is_finalized: bool,
+
+    pub is_canceled: bool,
+    pub description: String,
+
+    pub arbitrator: Address,
 }
 
 
@@ -47,8 +74,23 @@ impl InstallmentPayment {
         env.storage().persistent().set(&ADMIN, &admin);
         Ok(admin)
     }
+
+    pub fn create_installment_agreement(env: Env, seller: Address, buyer: Address, amount: u128, deadline: u128, arbitrator: Address, escrow: Address) -> bool {
+
+        true
+    }
     
-    pub fn pay_on_installment(env: Env, buyer_address: Address, installment_amount: u128) -> Result<bool, ContractError> {
+    pub fn pay_on_installment(env: Env, buyer_address: Address, installment_amount: u128, agreement_id: u128) -> Result<bool, ContractError> {
+        Ok(true)
+    }
+
+    pub fn finalize_agreement(env: Env, agreement_id: u128, ) -> Result<bool, ContractError> {
+
+        Ok(true)
+    }
+
+    pub fn accept_installment_agreement(env: Env, buyer: Address, accept_agreement: bool ) -> Result<bool, ContractError> {
+
         Ok(true)
     }
 }
