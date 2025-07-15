@@ -8,10 +8,10 @@ crate-type = ["cdylib"]
 
 [dependencies]
 soroban-sdk = { workspace = true }
+escrow_arbitration_contract= { workspace = true  }
 
 [dev-dependencies]
 soroban-sdk = { workspace = true, features = ["testutils"] }
-#escrow = { path = "../installment_payment_contract" }
 
 [features]
 testutils = ["soroban-sdk/testutils"]

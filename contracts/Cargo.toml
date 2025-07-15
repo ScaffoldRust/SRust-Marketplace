@@ -4,8 +4,8 @@ members = [
   "deferred-settlement/contracts/deferred-settlement",
   "marketplace-contracts/contracts/conditional-refund-contract",
   "marketplace-contracts/contracts/milestone-payment",
-  "marketplace-contracts/contracts/staggered-payment", 
-  "marketplace-contracts/contracts/escrow-arbitration-contract",
+  "marketplace-contracts/contracts/staggered-payment",
+  "marketplace-contracts/contracts/escrow_arbitration_contract",
   "marketplace-contracts/contracts/mutual_cancellation",
   "marketplace-contracts/contracts/timelock",
   "marketplace-contracts/contracts/installment_payment_contract"
@@ -15,6 +15,7 @@ members = [
 
 [workspace.dependencies]
 soroban-sdk = "22"
+escrow_arbitration_contract = { path = "marketplace-contracts/contracts/escrow_arbitration_contract" }
 
 [profile.release]
 opt-level = "z"

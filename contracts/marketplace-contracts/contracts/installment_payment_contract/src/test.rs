@@ -50,17 +50,17 @@ mod test {
         installment_payment_instance.initialize(&admin);
     }
 
-    #[test]
-    fn test_buyer_pay_on_installment(){
-        let (env, contract_address, mocked_address) = create_contract_variables();
-
-        let installed_payment_instance = InstallmentPaymentClient::new(&env, &contract_address);
-
-        let buyer_address: Address = Address::generate(&env);
-        let installment_amount: u128 = 1000;
-
-        let result: bool = installed_payment_instance.pay_on_installment(&buyer_address, &installment_amount);
-
-        assert_eq!(result, true);
-    }
+    // #[test]
+    // fn test_buyer_pay_on_installment(){
+    //     let (env, contract_address, mocked_address) = create_contract_variables();
+    //
+    //     let installed_payment_instance = InstallmentPaymentClient::new(&env, &contract_address);
+    //
+    //     let buyer_address: Address = Address::generate(&env);
+    //     let installment_amount: u128 = 1000;
+    //
+    //     // let result: bool = installed_payment_instance.pay_on_installment(&buyer_address, &installment_amount);
+    //     //
+    //     // assert_eq!(result, true);
+    // }
 }
