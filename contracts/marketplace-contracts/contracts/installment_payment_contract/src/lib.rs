@@ -140,6 +140,10 @@ impl InstallmentPayment {
             .persistent()
             .set(&agreement_key, &install_agreement);
 
+        env.events().publish(
+           ("installment_agreement_created",), new_agreement_id
+        );
+
         Ok(true)
     }
 
@@ -213,6 +217,10 @@ impl InstallmentPayment {
             .persistent()
             .set(&agreement_key, &installment_agreement);
 
+        env.events().publish(
+            ("installment_payment_made", ), (&agreement_id, &buyer_address, &installment_amount)
+        );
+
         Ok(true)
     }
 
@@ -268,6 +276,13 @@ impl InstallmentPayment {
             &(installment_agreement.total_amount as i128),
         );
 
+        env.events().publish(
+            ("agreement_published",), 
+            (
+                &agreement_id, &user
+            )
+        );
+
         Ok(true)
     }
 
@@ -310,6 +325,12 @@ impl InstallmentPayment {
             .persistent()
             .set(&agreement, &installment_agreement);
 
+        env.events().publish(
+            ("accept_agreement",), 
+            (
+                &agreement_id, &seller, &accept_agreement
+            )
+        );
         Ok(true)
     }
 
@@ -364,6 +385,12 @@ impl InstallmentPayment {
         env.storage()
             .persistent()
             .set(&agreement_key, &installment_agreement);
+
+        env.events().publish(
+            ("cancel_and_refund", ), (
+                &agreement_id, &address
+            )
+        );
         Ok(true)
     }
 
