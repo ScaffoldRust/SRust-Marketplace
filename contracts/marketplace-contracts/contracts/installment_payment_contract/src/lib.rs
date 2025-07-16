@@ -1,9 +1,11 @@
 #![no_std]
 
-mod test;
+pub mod test{
+    pub mod test;
+}
 
 use soroban_sdk::{
-    contract, contracterror, contractimpl, contracttype, log, symbol_short,
+    contract, contracterror, contractimpl, contracttype, symbol_short,
     token::{self, TokenClient},
     Address, Env, String, Symbol, Vec,
 };
