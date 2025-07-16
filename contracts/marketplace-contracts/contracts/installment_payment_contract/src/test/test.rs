@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod test {
 
-    use crate::{InstallmentPayment, InstallmentPaymentClient};
+    use crate::installment_payment::installment::{InstallmentPayment, InstallmentPaymentClient};
     use soroban_sdk::{
         log,
         testutils::{Address as _, Ledger},
@@ -406,6 +406,9 @@ mod test {
         let seller_balance = &token_contract.balance(&seller);
 
         assert_eq!(seller_balance, amount);
+
+        let agree_ment = installed_payment_instance.get_installment_agreement(&1).unwrap();
+        assert_eq!(agree_ment.is_finalized, true);
         // env.ledger().set_timestamp(300);
     }
 }
