@@ -208,12 +208,16 @@ impl InstallmentPayment {
         Ok(true)
     }
 
-    pub fn finalize_agreement(env: Env, agreement_id: u128, user: Address) -> Result<bool, ContractError> {
+    pub fn finalize_agreement(
+        env: Env,
+        agreement_id: u128,
+        user: Address,
+    ) -> Result<bool, ContractError> {
         // this checks if the deadline has been met or the total amout has been met
         let agreement_key: (u128, Symbol) = (agreement_id, AGREEMENT);
         let installment_agreement_optional: Option<InstallmentAgreement> =
             env.storage().persistent().get(&agreement_key);
-        
+
         if installment_agreement_optional.is_none() {
             return Err(ContractError::AgreementNotFOund);
         }
@@ -221,20 +225,31 @@ impl InstallmentPayment {
         let installment_agreement: InstallmentAgreement = installment_agreement_optional.unwrap();
 
         // on the buyer or the seller can finalize
-        assert!(user == installment_agreement.buyer || user == installment_agreement.seller, "");
+        assert!(
+            user == installment_agreement.buyer || user == installment_agreement.seller,
+            ""
+        );
 
         assert!(installment_agreement.is_accepted, "");
         assert!(!installment_agreement.is_finalized, "");
         assert!(!installment_agreement.is_canceled, "");
 
         let current_time = env.ledger().timestamp();
-        assert!(installment_agreement.amount_paid >= installment_agreement.total_amount || current_time > installment_agreement.deadline, "");
+        assert!(
+            installment_agreement.amount_paid >= installment_agreement.total_amount
+                || current_time > installment_agreement.deadline,
+            ""
+        );
 
-        // send to the seller 
+        // send to the seller
         let token_contract = token::TokenClient::new(&env, &installment_agreement.token);
 
-        token_contract.transfer(&env.current_contract_address(), &installment_agreement.seller, &(installment_agreement.total_amount as i128));
-        
+        token_contract.transfer(
+            &env.current_contract_address(),
+            &installment_agreement.seller,
+            &(installment_agreement.total_amount as i128),
+        );
+
         Ok(true)
     }
 
