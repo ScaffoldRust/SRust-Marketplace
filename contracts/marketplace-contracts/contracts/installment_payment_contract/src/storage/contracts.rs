@@ -1,9 +1,4 @@
-use core::ops::Add;
-
-use soroban_sdk::{
-    contract, contracterror, contractimpl, contracttype, symbol_short, token::TokenClient, Address,
-    Env, String, Symbol, Vec,
-};
+use soroban_sdk::{contracttype, Address, Env, String, Vec};
 
 #[contracttype]
 pub struct PaidHistory {
@@ -62,5 +57,27 @@ impl InstallmentAgreement {
             description,
             token,
         }
+    }
+
+    pub fn update_installment_agreement_payment_and_history(&mut self, env: &Env, amount: u128) {
+        let payment_history: PaidHistory = PaidHistory {
+            amount: amount,
+            timeline: env.ledger().timestamp(),
+        };
+
+        self.paid_history.push_back(payment_history);
+        self.amount_paid += &amount;
+    }
+
+    pub fn finalize(&mut self) {
+        self.is_finalized = true;
+    }
+
+    pub fn accept_agreement(&mut self, accept_agreement: bool) {
+        self.is_accepted = accept_agreement;
+    }
+
+    pub fn cancel_agreement(&mut self) {
+        self.is_canceled = true;
     }
 }

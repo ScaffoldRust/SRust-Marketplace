@@ -1,7 +1,7 @@
 use soroban_sdk::{
     contract, contractimpl, symbol_short,
     token::{self, TokenClient},
-    Address, Env, String, Symbol, Vec,
+    Address, Env, String, Symbol,
 };
 
 use crate::errors::errors::*;
@@ -144,17 +144,8 @@ impl InstallmentPayment {
             &(installment_amount as i128),
         );
 
-        // create the payment history
-        let payment_history: PaidHistory = PaidHistory {
-            amount: installment_amount,
-            timeline: env.ledger().timestamp(),
-        };
-        // update the agreement
-
         installment_agreement
-            .paid_history
-            .push_back(payment_history);
-        installment_agreement.amount_paid += &installment_amount;
+            .update_installment_agreement_payment_and_history(&env, installment_amount);
 
         save_installment_agreement(&env, agreement_id, installment_agreement);
 
@@ -218,7 +209,7 @@ impl InstallmentPayment {
             &(installment_agreement.total_amount as i128),
         );
 
-        installment_agreement.is_finalized = true;
+        installment_agreement.finalize();
 
         save_installment_agreement(&env, agreement_id, installment_agreement);
         env.events()
@@ -261,7 +252,7 @@ impl InstallmentPayment {
             "cannot carry out action as agreement has been previously finalized"
         );
 
-        installment_agreement.is_accepted = accept_agreement;
+        installment_agreement.accept_agreement(accept_agreement);
 
         save_installment_agreement(&env, agreement_id, installment_agreement);
 
@@ -300,7 +291,7 @@ impl InstallmentPayment {
         );
 
         // change the state to true
-        installment_agreement.is_canceled = true;
+        installment_agreement.cancel_agreement();
 
         // check the total amount paid by the buyer and refund
         let total_installment_amount_paid: u128 = installment_agreement.amount_paid;

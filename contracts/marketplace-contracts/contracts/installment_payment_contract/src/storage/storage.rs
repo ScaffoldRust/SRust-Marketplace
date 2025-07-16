@@ -1,4 +1,4 @@
-use soroban_sdk::{symbol_short, token::TokenClient as Token, Address, Env, Symbol};
+use soroban_sdk::{symbol_short, Env, Symbol};
 
 use crate::storage::contracts::InstallmentAgreement;
 

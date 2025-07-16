@@ -268,12 +268,13 @@ mod test {
 
         assert_eq!(installment.amount_paid, 30);
 
-        installed_payment_instance.pay_on_installment(&buyer, &30, &1);
+        installed_payment_instance.pay_on_installment(&buyer, &20, &1);
         installed_payment_instance.pay_on_installment(&buyer, &30, &1);
 
         let optional_installment = installed_payment_instance.get_installment_agreement(&1);
         let installment = optional_installment.unwrap();
-        assert_eq!(installment.amount_paid, 90);
+        assert_eq!(installment.amount_paid, 80);
+        assert_eq!(installment.paid_history.get(1).unwrap().amount, 20);
 
         assert_eq!(installment.paid_history.len(), 3);
 
