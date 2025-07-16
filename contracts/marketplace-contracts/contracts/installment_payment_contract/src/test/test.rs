@@ -407,7 +407,9 @@ mod test {
 
         assert_eq!(seller_balance, amount);
 
-        let agree_ment = installed_payment_instance.get_installment_agreement(&1).unwrap();
+        let agree_ment = installed_payment_instance
+            .get_installment_agreement(&1)
+            .unwrap();
         assert_eq!(agree_ment.is_finalized, true);
         // env.ledger().set_timestamp(300);
     }

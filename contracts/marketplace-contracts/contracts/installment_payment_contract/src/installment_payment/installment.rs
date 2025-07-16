@@ -4,12 +4,10 @@ use soroban_sdk::{
     Address, Env, String, Symbol, Vec,
 };
 
-use crate::{errors::errors::*,};
+use crate::errors::errors::*;
 use crate::storage::{contracts::*, storage::*};
 
 const ADMIN: Symbol = symbol_short!("i_p_admin"); // length cannot be more than 9, hence, i = installment, p = payment,
-const AGREEMENT_ID: Symbol = symbol_short!("agree_id");
-const AGREEMENT: Symbol = symbol_short!("agreement");
 
 #[contract]
 pub struct InstallmentPayment;
@@ -85,7 +83,7 @@ impl InstallmentPayment {
         //save the agreement
         save_new_agreement_id(&env, new_agreement_id);
         save_installment_agreement(&env, new_agreement_id, install_agreement);
-      
+
         env.events()
             .publish(("installment_agreement_created",), new_agreement_id);
 
@@ -99,10 +97,10 @@ impl InstallmentPayment {
         agreement_id: u128,
     ) -> Result<bool, ContractError> {
         buyer_address.require_auth();
-        let agreement_key: (u128, Symbol) = (agreement_id, AGREEMENT);
 
         let installment_agreement_optional: Option<InstallmentAgreement> =
-            env.storage().persistent().get(&agreement_key);
+            get_installment_agreement(&env, agreement_id);
+
         if &installment_agreement_optional.is_none() == &true {
             return Err(ContractError::AgreementNotFOund);
         }
@@ -158,9 +156,7 @@ impl InstallmentPayment {
             .push_back(payment_history);
         installment_agreement.amount_paid += &installment_amount;
 
-        env.storage()
-            .persistent()
-            .set(&agreement_key, &installment_agreement);
+        save_installment_agreement(&env, agreement_id, installment_agreement);
 
         env.events().publish(
             ("installment_payment_made",),
@@ -184,7 +180,8 @@ impl InstallmentPayment {
             return Err(ContractError::AgreementNotFOund);
         }
 
-        let mut installment_agreement: InstallmentAgreement = installment_agreement_optional.unwrap();
+        let mut installment_agreement: InstallmentAgreement =
+            installment_agreement_optional.unwrap();
 
         // on the buyer or the seller can finalize
         assert!(
@@ -332,9 +329,6 @@ impl InstallmentPayment {
 
     pub fn get_installment_agreement(env: Env, agreement_id: u128) -> Option<InstallmentAgreement> {
         // Err(String::from_str(&env, ""))
-        let agreement_key: (u128, Symbol) = (agreement_id, AGREEMENT);
-        let installment: Option<InstallmentAgreement> =
-            env.storage().persistent().get(&agreement_key);
-        installment
+        get_installment_agreement(&env, agreement_id)
     }
 }
