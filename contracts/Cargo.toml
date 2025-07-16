@@ -15,7 +15,7 @@ members = [
 
 [workspace.dependencies]
 soroban-sdk = "22"
-escrow_arbitration_contract = { path = "marketplace-contracts/contracts/escrow_arbitration_contract" }
+# escrow_arbitration_contract = { path = "marketplace-contracts/contracts/escrow_arbitration_contract" }
 
 [profile.release]
 opt-level = "z"

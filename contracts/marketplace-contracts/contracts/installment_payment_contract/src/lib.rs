@@ -3,7 +3,7 @@
 mod test;
 
 use soroban_sdk::{
-    contract, contracterror, contractimpl, contracttype, symbol_short,
+    contract, contracterror, contractimpl, contracttype, log, symbol_short,
     token::{self, TokenClient},
     Address, Env, String, Symbol, Vec,
 };
@@ -122,7 +122,7 @@ impl InstallmentPayment {
             is_accepted: false,
             amount_paid: 0,
             paid_history: Vec::new(&env),
-            deadline: env.ledger().timestamp(),
+            deadline: env.ledger().timestamp() + deadline,
             is_finalized: false,
             is_canceled: false,
             arbitrator,
@@ -149,6 +149,7 @@ impl InstallmentPayment {
         installment_amount: u128,
         agreement_id: u128,
     ) -> Result<bool, ContractError> {
+        buyer_address.require_auth();
         let agreement_key: (u128, Symbol) = (agreement_id, AGREEMENT);
 
         let installment_agreement_optional: Option<InstallmentAgreement> =
@@ -172,11 +173,14 @@ impl InstallmentPayment {
             !&installment_agreement.is_finalized,
             "agreement has been finalized"
         );
-        assert!(&installment_agreement.deadline > &env.ledger().timestamp());
+        assert!(
+            &installment_agreement.deadline > &env.ledger().timestamp(),
+            "agreement past stipulated deadline"
+        );
 
         assert!(installment_amount > 0, "amount cannot be zero");
 
-        let token_address: Address = installment_agreement.token;
+        let token_address: &Address = &installment_agreement.token;
 
         // create the token client
         let token_contract: TokenClient = token::TokenClient::new(&env, &token_address);
@@ -203,7 +207,11 @@ impl InstallmentPayment {
         installment_agreement
             .paid_history
             .push_back(payment_history);
-        installment_agreement.amount_paid += installment_amount;
+        installment_agreement.amount_paid += &installment_amount;
+
+        env.storage()
+            .persistent()
+            .set(&agreement_key, &installment_agreement);
 
         Ok(true)
     }
@@ -213,6 +221,7 @@ impl InstallmentPayment {
         agreement_id: u128,
         user: Address,
     ) -> Result<bool, ContractError> {
+        user.require_auth();
         // this checks if the deadline has been met or the total amout has been met
         let agreement_key: (u128, Symbol) = (agreement_id, AGREEMENT);
         let installment_agreement_optional: Option<InstallmentAgreement> =
@@ -230,15 +239,24 @@ impl InstallmentPayment {
             ""
         );
 
-        assert!(installment_agreement.is_accepted, "");
-        assert!(!installment_agreement.is_finalized, "");
-        assert!(!installment_agreement.is_canceled, "");
-
-        let current_time = env.ledger().timestamp();
         assert!(
-            installment_agreement.amount_paid >= installment_agreement.total_amount
-                || current_time > installment_agreement.deadline,
-            ""
+            installment_agreement.is_accepted,
+            "agreement not yet accepted"
+        );
+        assert!(
+            !installment_agreement.is_finalized,
+            "agreement has been finalized"
+        );
+        assert!(
+            !installment_agreement.is_canceled,
+            "agreement has been canceled"
+        );
+
+        // let current_time = env.ledger().timestamp();
+        assert!(
+            installment_agreement.amount_paid >= installment_agreement.total_amount,
+            // || current_time > installment_agreement.deadline,
+            "agreed amount not met yet"
         );
 
         // send to the seller
@@ -259,6 +277,7 @@ impl InstallmentPayment {
         accept_agreement: bool,
         agreement_id: u128,
     ) -> Result<bool, ContractError> {
+        seller.require_auth();
         let agreement: (u128, Symbol) = (agreement_id, AGREEMENT);
         let installment_agreement_optional: Option<InstallmentAgreement> =
             env.storage().persistent().get(&agreement);
@@ -272,9 +291,18 @@ impl InstallmentPayment {
             return Err(ContractError::NotAuthorized);
         }
 
-        assert!(!&installment_agreement.is_accepted);
-        assert!(!&installment_agreement.is_canceled);
-        assert!(!&installment_agreement.is_finalized);
+        assert!(
+            !&installment_agreement.is_accepted,
+            "cannot carry out action agreement has been accepted"
+        );
+        assert!(
+            !&installment_agreement.is_canceled,
+            "cannot carry out action as agreement has previously been canceled"
+        );
+        assert!(
+            !&installment_agreement.is_finalized,
+            "cannot carry out action as agreement has been previously finalized"
+        );
 
         installment_agreement.is_accepted = accept_agreement;
 
@@ -291,6 +319,7 @@ impl InstallmentPayment {
         address: Address,
         agreement_id: u128,
     ) -> Result<bool, ContractError> {
+        address.require_auth();
         let agreement_key: (u128, Symbol) = (agreement_id, AGREEMENT);
 
         let installment_agreement_optional: Option<InstallmentAgreement> =
@@ -341,6 +370,8 @@ impl InstallmentPayment {
     pub fn get_installment_agreement(env: Env, agreement_id: u128) -> Option<InstallmentAgreement> {
         // Err(String::from_str(&env, ""))
         let agreement_key: (u128, Symbol) = (agreement_id, AGREEMENT);
-        env.storage().persistent().get(&agreement_key)
+        let installment: Option<InstallmentAgreement> =
+            env.storage().persistent().get(&agreement_key);
+        installment
     }
 }
