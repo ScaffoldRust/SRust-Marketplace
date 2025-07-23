@@ -1,0 +1,60 @@
+name: Soroban Contracts CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'contracts/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'contracts/**'
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+          override: true
+
+      - name: Cache Rust dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Install Stellar CLI
+        uses: stellar/stellar-cli@v22.5.0
+
+      - name: Build contracts (cargo build)
+        run: |
+          cd contracts
+          cargo build --target wasm32-unknown-unknown --all
+
+      - name: Build with Stellar CLI (stellar contract build)
+        run: |
+          for dir in contracts/*/; do
+            if [ -f "$dir/Cargo.toml" ]; then
+              echo "Building $dir"
+              (cd "$dir" && stellar contract build)
+            fi
+          done
+
+      - name: Run tests (cargo test)
+        run: |
+          cd contracts
+          cargo test --all
