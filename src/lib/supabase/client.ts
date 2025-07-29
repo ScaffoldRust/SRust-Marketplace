@@ -1,30 +1,33 @@
-import { createClient } from '@supabase/supabase-js';
-import { Database } from '../types/database.types';
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
+import type { Database } from '../types/database.types'
 
-// Environment variables should be properly typed
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY as string;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-// Validate environment variables are present
-if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error('Missing Supabase environment variables. Please check your .env file.');
-}
+export const supabase: SupabaseClient<Database> = createClient<Database>(
+  supabaseUrl!,
+  supabaseAnonKey!,
+  {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+    },
+  }
+)
 
-// Create a regular client for public use
-const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+export const adminClient: SupabaseClient<Database> = createClient<Database>(
+  supabaseUrl!,
+  supabaseServiceRoleKey!,
+  {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  }
+)
 
-// Create an admin client with service role key for bypassing RLS
-// This should only be used in server environments
-const adminClient = createClient<Database>(
-    supabaseUrl,
-    supabaseServiceRoleKey,
-    {
-        auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-        },
-    }
-);
+export { supabaseUrl, supabaseAnonKey, supabaseServiceRoleKey }
 
-export { supabase, adminClient };
+export type SupabaseAdmin = typeof adminClient
+export type SupabasePublic = typeof supabase

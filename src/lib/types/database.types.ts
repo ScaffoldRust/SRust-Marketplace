@@ -61,6 +61,11 @@ export type Database = {
                 Insert: Omit<Review, 'id' | 'created_at' | 'updated_at'>;
                 Update: Partial<Omit<Review, 'id' | 'created_at' | 'updated_at'>>;
             };
+            profiles: {
+                Row: Profile;
+                Insert: Omit<Profile, 'id' | 'create_at' | 'updated_at'>;
+                Update: Partial<Omit<Profile, 'id' | 'created_at' | 'updated_at'>>;
+            }
         };
         Views: {
             seller_dashboard_view: {
@@ -369,4 +374,12 @@ export type ProductFilter = {
     featured?: boolean;
     sortBy?: 'price' | 'rating' | 'created_at';
     sortOrder?: 'asc' | 'desc';
+};
+
+export type Profile = {
+    id: string
+    user_type: 'buyer' | 'seller' | 'both'
+    display_name: string | null
+    created_at: string
+    updated_at: string
 };
