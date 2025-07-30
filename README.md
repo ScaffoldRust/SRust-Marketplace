@@ -45,7 +45,15 @@ flowchart TD
 
 Try the live version here → [marketplace.scaffoldrust.dev](https://marketplace.scaffoldrust.dev)
 
-[coming soon]
+### Demo Video
+
+[![SRust Marketplace Demo](https://img.youtube.com/vi/NqV-F3Kig_Y/0.jpg)](https://www.youtube.com/watch?v=NqV-F3Kig_Y)
+
+*Click the image above to watch the demo video*
+
+<!-- For documentation or embedding in other platforms:
+<iframe width="560" height="315" src="https://www.youtube.com/embed/NqV-F3Kig_Y?si=0h2Rp08vA2vsfsRz" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+-->
 
 ---
 
