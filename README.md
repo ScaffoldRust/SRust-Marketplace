@@ -25,8 +25,8 @@ flowchart TD
     B --> C[Supabase Auth + DB]
     B --> D[Stellar Wallet Interaction]
     D --> E[Smart Payments on Stellar]
-    C --> F[Marketplace Logic (Products, Orders, Ratings)]
-````
+    C --> F[Marketplace Logic 'Products, Orders, Ratings']
+```
 
 ---
 
@@ -43,7 +43,9 @@ flowchart TD
 
 ## 🧪 Live Demo
 
-Try the live version here → [marketplace.scaffoldrust.dev](https://marketplace.scaffoldrust.dev)
+Try the live version here → [marketplace.scaffoldrust.dev](https://marketplace.scaffoldrust.dev) 
+
+[coming soon]
 
 ### Demo Video
 
