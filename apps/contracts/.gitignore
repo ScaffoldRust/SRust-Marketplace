@@ -1,0 +1,39 @@
+# Rust build artifacts
+/target/
+**/*.rs.bk
+*.pdb
+
+# Local settings and environment files
+.soroban/
+.stellar/
+.env
+.env.local
+
+# Test artifacts
+test_snapshots/
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Build outputs
+*.wasm
+
+# Logs
+*.log
+log/
+logs/
+
+# Dependency directories
+node_modules/
+
+# Generated documentation
+doc/
+docs/build/
