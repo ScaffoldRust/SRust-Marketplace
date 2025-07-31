@@ -1,22 +1,11 @@
 [workspace]
 resolver = "2"
 members = [
-  "deferred-settlement/contracts/deferred-settlement",
-  "marketplace-contracts/contracts/conditional-refund-contract",
-  "marketplace-contracts/contracts/milestone-payment",
-  "marketplace-contracts/contracts/staggered-payment",
-  "marketplace-contracts/contracts/escrow_arbitration_contract",
-  "marketplace-contracts/contracts/mutual_cancellation",
-  "marketplace-contracts/contracts/timelock",
-  "marketplace-contracts/contracts/installment_payment_contract",
-  "marketplace-contracts/contracts/automated-auction-contract"
-
-  # "multisign-escrow/contracts/multisign-escrow",
+  "contracts/*",
 ]
 
 [workspace.dependencies]
-soroban-sdk = "22"
-# escrow_arbitration_contract = { path = "marketplace-contracts/contracts/escrow_arbitration_contract" }
+soroban-sdk = "22.0.0"
 
 [profile.release]
 opt-level = "z"
