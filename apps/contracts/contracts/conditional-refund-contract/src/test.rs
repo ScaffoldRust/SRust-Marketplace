@@ -24,7 +24,7 @@ fn create_token_contract<'a>(
 }
 
 fn create_refund_contract<'a>(env: &Env) -> ConditionalRefundContractClient<'a> {
-    let contract_address = env.register_contract(None, ConditionalRefundContract);
+    let contract_address = env.register(ConditionalRefundContract, ());
     ConditionalRefundContractClient::new(env, &contract_address)
 }
 

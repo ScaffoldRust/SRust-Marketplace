@@ -24,10 +24,3 @@ soroban-sdk = { workspace = true, features = ["testutils"] }
 
 [lib]
 crate-type = ["cdylib", "rlib"]
-
-[profile.release]
-opt-level = "z"        # Tamaño reducido
-codegen-units = 1
-lto = true
-panic = "abort"
-strip = "symbols"

@@ -10,7 +10,7 @@ use crate::datatypes::EscrowStatus;
 use crate::escrow::{EscrowContract, EscrowContractClient};
 
 fn create_client<'a>(env: &'a Env) -> EscrowContractClient<'a> {
-    let contract_id = env.register_contract(None, EscrowContract);
+    let contract_id = env.register(EscrowContract, ());
     EscrowContractClient::new(env, &contract_id)
 }
 
@@ -54,7 +54,7 @@ fn test_deposit_and_approve_flow() {
     token_sac.mint(&buyer, &1000);
 
     // Deploy and initialize escrow
-    let escrow_address = env.register_contract(None, EscrowContract);
+    let escrow_address = env.register(EscrowContract, ());
     let escrow = EscrowContractClient::new(&env, &escrow_address);
 
     escrow.initialize(
@@ -118,7 +118,7 @@ fn test_release_funds() {
     token_sac.mint(&buyer, &1000);
 
     // Register escrow contract
-    let escrow_address = env.register_contract(None, EscrowContract);
+    let escrow_address = env.register(EscrowContract, ());
     let client = EscrowContractClient::new(&env, &escrow_address);
 
     // Initialize escrow
@@ -166,7 +166,7 @@ fn test_refund_after_deadline() {
     token_sac.mint(&buyer, &1000);
 
     // Register escrow contract
-    let escrow_address = env.register_contract(None, EscrowContract);
+    let escrow_address = env.register(EscrowContract, ());
     let client = EscrowContractClient::new(&env, &escrow_address);
 
     let deadline = env.ledger().timestamp();

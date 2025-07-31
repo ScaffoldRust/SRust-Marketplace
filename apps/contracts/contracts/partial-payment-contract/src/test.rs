@@ -13,7 +13,7 @@ fn create_token_contract<'a>(
     env: &Env,
     admin: &Address,
 ) -> (token::Client<'a>, TokenAdminClient<'a>) {
-    let token_address = env.register_stellar_asset_contract(admin.clone());
+    let token_address = env.register_stellar_asset_contract_v2(admin.clone()).address();
     (
         token::Client::new(env, &token_address),
         TokenAdminClient::new(env, &token_address),
@@ -41,7 +41,7 @@ impl<'a> DepositTest<'a> {
         let (token_client, token_admin_client) = create_token_contract(&env, &seller);
 
         // Main Deposit Contract
-        let contract_id = env.register_contract(None, PartialPaymentContract);
+        let contract_id = env.register(PartialPaymentContract, ());
         let contract = PartialPaymentContractClient::new(&env, &contract_id);
 
         // Fund buyer

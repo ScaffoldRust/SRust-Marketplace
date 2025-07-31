@@ -12,7 +12,7 @@ fn create_token_contract<'a>(
     env: &Env,
     admin: &Address,
 ) -> (token::Client<'a>, TokenAdminClient<'a>) {
-    let token_address = env.register_stellar_asset_contract(admin.clone());
+    let token_address = env.register_stellar_asset_contract_v2(admin.clone()).address();
     (
         token::Client::new(env, &token_address),
         TokenAdminClient::new(env, &token_address),
@@ -42,7 +42,7 @@ impl<'a> EscrowTest<'a> {
         let (token_client, token_admin_client) = create_token_contract(&env, &admin);
 
         // Main Escrow Contract
-        let contract_id = env.register_contract(None, AutoReleaseEscrowContract);
+        let contract_id = env.register(AutoReleaseEscrowContract, ());
         let contract = AutoReleaseEscrowContractClient::new(&env, &contract_id);
 
         // Fund buyer
