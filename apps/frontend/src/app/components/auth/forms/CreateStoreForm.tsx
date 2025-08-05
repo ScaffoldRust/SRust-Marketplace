@@ -63,7 +63,6 @@ interface CreateStoreFormProps {
 export default function CreateStoreForm({ onSuccess }: CreateStoreFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { createStore } = useAuth();
-
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -83,6 +82,7 @@ export default function CreateStoreForm({ onSuccess }: CreateStoreFormProps) {
         logo: values.logo,
         stellar_wallet_address: values.walletAddress,
       });
+
       console.log("Store creation form submitted:", values);
       onSuccess();
     } catch (error) {

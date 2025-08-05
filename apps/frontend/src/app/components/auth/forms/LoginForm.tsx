@@ -37,7 +37,6 @@ export default function LoginForm({
 }: LoginFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { signIn } = useAuth();
-
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {

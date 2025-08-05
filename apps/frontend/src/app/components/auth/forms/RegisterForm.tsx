@@ -33,6 +33,7 @@ const formSchema = z.object({
       message: "Username can only contain letters, numbers and underscores",
     }),
     userType: z.enum(["buyer", "seller", "both"]),
+
 });
 
 type FormValues = z.infer<typeof formSchema>;

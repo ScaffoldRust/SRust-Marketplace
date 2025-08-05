@@ -559,7 +559,6 @@ CREATE TRIGGER trigger_track_order_status_change
     FOR EACH ROW
     EXECUTE FUNCTION track_order_status_change();
 
--- 1. Create a wrapper function
 CREATE OR REPLACE FUNCTION trigger_calculate_daily_analytics_wrapper()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -568,12 +567,12 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- 2. Create the trigger using the wrapper
 DROP TRIGGER IF EXISTS trigger_calculate_daily_analytics ON orders;
 CREATE TRIGGER trigger_calculate_daily_analytics
     AFTER INSERT OR UPDATE ON orders
     FOR EACH ROW
     EXECUTE FUNCTION trigger_calculate_daily_analytics_wrapper();
+
 
 -- Enable RLS on all new tables
 ALTER TABLE stores ENABLE ROW LEVEL SECURITY;

@@ -172,10 +172,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "auto-release-escrow-contract"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk 22.0.8",
+]
+
+[[package]]
 name = "autocfg"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
+
+[[package]]
+name = "automated-auction-contract"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk 22.0.8",
+]
+
+[[package]]
+name = "automatic-marketplace-fee-deduction"
+version = "0.0.0"
+dependencies = [
+ "soroban-sdk 22.0.8",
+]
 
 [[package]]
 name = "backtrace"
@@ -936,6 +957,13 @@ dependencies = [
  "elliptic-curve",
  "primeorder",
  "sha2",
+]
+
+[[package]]
+name = "partial-payment-contract"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk 22.0.8",
 ]
 
 [[package]]

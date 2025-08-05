@@ -25,7 +25,7 @@ fn create_token_contract<'a>(
 }
 
 fn create_milestone_contract<'a>(env: &Env) -> MilestonePaymentContractClient<'a> {
-    let contract_address = env.register_contract(None, MilestonePaymentContract);
+    let contract_address = env.register(MilestonePaymentContract, ());
     MilestonePaymentContractClient::new(env, &contract_address)
 }
 
