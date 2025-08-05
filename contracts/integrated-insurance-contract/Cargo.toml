@@ -1,14 +1,11 @@
 [workspace]
 resolver = "2"
 members = [
-  # "contracts/*", 
-  "deferred-settlement/contracts/deferred-settlement",  # "integrated-insurance-contract", 
-  # "integrated-insurance-contract/contract", 
-  "marketplace-contracts/contracts/integrated-insurance-contract",
+  "contracts/*",
 ]
 
 [workspace.dependencies]
-soroban-sdk = "22"
+soroban-sdk = "22.0.0"
 
 [profile.release]
 opt-level = "z"
