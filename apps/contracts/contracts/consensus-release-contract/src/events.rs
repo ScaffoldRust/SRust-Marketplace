@@ -86,38 +86,38 @@ pub struct TransactionExpiredEvent {
 }
 
 // Helper functions to emit events
-pub fn emit_transaction_created(env: &Env, event: &TransactionCreatedEvent) {
+pub fn emit_transaction_created(env: &Env, event: TransactionCreatedEvent) {
     env.events().publish(("transaction_created",), event);
 }
 
-pub fn emit_transaction_funded(env: &Env, event: &TransactionFundedEvent) {
+pub fn emit_transaction_funded(env: &Env, event: TransactionFundedEvent) {
     env.events().publish(("transaction_funded",), event);
 }
 
-pub fn emit_agreement_submitted(env: &Env, event: &AgreementSubmittedEvent) {
+pub fn emit_agreement_submitted(env: &Env, event: AgreementSubmittedEvent) {
     env.events().publish(("agreement_submitted",), event);
 }
 
-pub fn emit_consensus_reached(env: &Env, event: &ConsensusReachedEvent) {
+pub fn emit_consensus_reached(env: &Env, event: ConsensusReachedEvent) {
     env.events().publish(("consensus_reached",), event);
 }
 
-pub fn emit_consensus_rejected(env: &Env, event: &ConsensusRejectedEvent) {
+pub fn emit_consensus_rejected(env: &Env, event: ConsensusRejectedEvent) {
     env.events().publish(("consensus_rejected",), event);
 }
 
-pub fn emit_funds_released(env: &Env, event: &FundsReleasedEvent) {
+pub fn emit_funds_released(env: &Env, event: FundsReleasedEvent) {
     env.events().publish(("funds_released",), event);
 }
 
-pub fn emit_funds_refunded(env: &Env, event: &FundsRefundedEvent) {
+pub fn emit_funds_refunded(env: &Env, event: FundsRefundedEvent) {
     env.events().publish(("funds_refunded",), event);
 }
 
-pub fn emit_transaction_status_changed(env: &Env, event: &TransactionStatusChangedEvent) {
+pub fn emit_transaction_status_changed(env: &Env, event: TransactionStatusChangedEvent) {
     env.events().publish(("transaction_status_changed",), event);
 }
 
-pub fn emit_transaction_expired(env: &Env, event: &TransactionExpiredEvent) {
+pub fn emit_transaction_expired(env: &Env, event: TransactionExpiredEvent) {
     env.events().publish(("transaction_expired",), event);
 }
