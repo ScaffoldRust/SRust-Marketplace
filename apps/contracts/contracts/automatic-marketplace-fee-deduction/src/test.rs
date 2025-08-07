@@ -43,7 +43,7 @@ impl TestContext {
         }
     }
 
-    fn get_client(&self) -> MarketplaceFeeContractClient {
+    fn get_client(&self) -> MarketplaceFeeContractClient<'static> {
         MarketplaceFeeContractClient::new(&self.env, &self.contract_id)
     }
 
