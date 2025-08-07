@@ -5,10 +5,12 @@ on:
     branches: ['main']
     paths:
       - 'apps/contracts/**'
+      - '.github/workflows/contracts.yml'
   pull_request:
     branches: ['main']
     paths:
       - 'apps/contracts/**'
+      - '.github/workflows/contracts.yml'
 
 env:
   CARGO_TERM_COLOR: always
