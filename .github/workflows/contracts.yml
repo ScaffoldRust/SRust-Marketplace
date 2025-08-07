@@ -5,10 +5,12 @@ on:
     branches: ['main']
     paths:
       - 'apps/contracts/**'
+      - '.github/workflows/contracts.yml'
   pull_request:
     branches: ['main']
     paths:
       - 'apps/contracts/**'
+      - '.github/workflows/contracts.yml'
 
 env:
   CARGO_TERM_COLOR: always
@@ -34,31 +36,16 @@ jobs:
           brew update
           brew install stellar-cli
           stellar --version
-      - name: Cache Rust dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-
       - name: Build Cargo project
         run: |
           source $HOME/.cargo/env
           cargo build --verbose
         working-directory: apps/contracts
 
-      - name: Build Soroban contracts
+      - name: Build Soroban contract
         run: |
           source $HOME/.cargo/env
-          for contract in contracts/*/; do
-            if [ -f "$contract/Cargo.toml" ]; then
-              echo "Building contract: $contract"
-              stellar contract build --verbose --path "$contract"
-            fi
-          done
+          stellar contract build --verbose
         working-directory: apps/contracts
 
       - name: Run Cargo tests
