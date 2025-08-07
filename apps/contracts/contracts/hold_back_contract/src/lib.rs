@@ -1,8 +1,6 @@
 #![no_std]
 
-
-use soroban_sdk::{Address, Env, contract, contractimpl, contracttype, contracterror, log, token};
-
+use soroban_sdk::{contract, contracterror, contractimpl, contracttype, log, token, Address, Env};
 
 #[contracterror]
 #[derive(Copy, Clone, Debug, Eq, PartialEq, PartialOrd, Ord)]
@@ -20,14 +18,13 @@ pub enum Error {
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
-enum TransactionStatus {
+pub enum TransactionStatus {
     Held,
     HoldbackPending,
     Completed,
     Cancelled,
     Disputed,
 }
-
 
 #[contracttype]
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -48,11 +45,11 @@ pub struct Transaction {
 pub enum DataKey {
     Transaction(u128),
     TransactionCounter,
-    Token, 
+    Token,
     Admin,
 }
 
-const DAY_IN_SECONDS: u64 = 86400; 
+const DAY_IN_SECONDS: u64 = 86400;
 
 #[contract]
 pub struct HoldBackContract;
@@ -97,13 +94,19 @@ impl HoldBackContract {
         }
 
         let holdback_amount = (amount * holdback_rate as u128) / 100;
-        let final_amount = amount.checked_sub(holdback_amount).ok_or(Error::InvalidAmount)?;
+        let final_amount = amount
+            .checked_sub(holdback_amount)
+            .ok_or(Error::InvalidAmount)?;
 
         let token_client = token::Client::new(&env, &token);
         token_client.transfer(&buyer, &env.current_contract_address(), &(amount as i128));
 
         if final_amount > 0 {
-            token_client.transfer(&env.current_contract_address(), &seller, &(final_amount as i128));
+            token_client.transfer(
+                &env.current_contract_address(),
+                &seller,
+                &(final_amount as i128),
+            );
         }
 
         let transaction_id = env
@@ -132,13 +135,10 @@ impl HoldBackContract {
             .persistent()
             .set(&DataKey::Transaction(transaction_id), &transaction);
 
-        env.events().publish(("transaction_created",),
-            (transaction_id,
-            buyer,
-            seller,
-            amount,
-            holdback_amount,
-        ));
+        env.events().publish(
+            ("transaction_created",),
+            (transaction_id, buyer, seller, amount, holdback_amount),
+        );
 
         log!(
             &env,
@@ -193,10 +193,8 @@ impl HoldBackContract {
             .persistent()
             .set(&DataKey::Transaction(transaction_id), &transaction);
 
-        env.events().publish(( "dispute_initiated",),
-            (transaction_id,
-            buyer,
-        ));
+        env.events()
+            .publish(("dispute_initiated",), (transaction_id, buyer));
         Ok(())
     }
 
@@ -233,11 +231,14 @@ impl HoldBackContract {
                 &(transaction.holdback_amount as i128),
             );
             transaction.status = TransactionStatus::Cancelled;
-            env.events().publish(( "holdback_refunded",),
-                (transaction_id,
-                transaction.buyer.clone(),
-                transaction.holdback_amount,
-            ));
+            env.events().publish(
+                ("holdback_refunded",),
+                (
+                    transaction_id,
+                    transaction.buyer.clone(),
+                    transaction.holdback_amount,
+                ),
+            );
         } else {
             token_client.transfer(
                 &env.current_contract_address(),
@@ -245,13 +246,18 @@ impl HoldBackContract {
                 &(transaction.holdback_amount as i128),
             );
             transaction.status = TransactionStatus::Completed;
-            env.events().publish(("holdback_released",),
-                (transaction_id,
-                transaction.seller.clone(),
-                transaction.holdback_amount,
-            ));
+            env.events().publish(
+                ("holdback_released",),
+                (
+                    transaction_id,
+                    transaction.seller.clone(),
+                    transaction.holdback_amount,
+                ),
+            );
         }
-        env.storage().persistent().set(&DataKey::Transaction(transaction_id), &transaction);
+        env.storage()
+            .persistent()
+            .set(&DataKey::Transaction(transaction_id), &transaction);
         Ok(())
     }
 
@@ -293,11 +299,14 @@ impl HoldBackContract {
                 .persistent()
                 .set(&DataKey::Transaction(transaction_id), &transaction);
 
-            env.events().publish(("holdback_released",),
-                (transaction_id,
-                transaction.seller,
-                transaction.holdback_amount,
-            ));
+            env.events().publish(
+                ("holdback_released",),
+                (
+                    transaction_id,
+                    transaction.seller,
+                    transaction.holdback_amount,
+                ),
+            );
         }
         Ok(())
     }
@@ -317,25 +326,22 @@ impl HoldBackContract {
     }
 }
 
-
 #[cfg(test)]
 mod test {
     use super::*;
 
     use soroban_sdk::{
-        log,
         testutils::{Address as _, Ledger},
         token::{self, StellarAssetClient},
-        Address, Env, String,
+        Address, Env,
     };
-
 
     fn create_variables() -> (Env, Address, Address) {
         let env = Env::default();
         env.mock_all_auths();
         // register the contract
         let contract_address = env.register(HoldBackContract, {});
-        let mocked_address = Address::generate(&env);  
+        let mocked_address = Address::generate(&env);
 
         (env, contract_address, mocked_address)
     }
@@ -348,7 +354,8 @@ mod test {
         )
     }
 
-    fn create_variables_and_initialize_contract() -> (Env, HoldBackContractClient<'static>, Address) {
+    fn create_variables_and_initialize_contract() -> (Env, HoldBackContractClient<'static>, Address)
+    {
         let (env, contract_address, mocked_address) = create_variables();
 
         let contract_instance = HoldBackContractClient::new(&env, &contract_address);
@@ -359,7 +366,12 @@ mod test {
     }
 
     fn generate_addresses(env: &Env) -> (Address, Address, Address, Address) {
-        (Address::generate(env), Address::generate(env), Address::generate(env), Address::generate(env))
+        (
+            Address::generate(env),
+            Address::generate(env),
+            Address::generate(env),
+            Address::generate(env),
+        )
     }
     //"initialize the contract"
     #[test]
@@ -373,8 +385,6 @@ mod test {
         assert_eq!(contract_instance.get_admin(), mocked_address);
     }
 
-
-
     #[test]
     fn test_create_payment() {
         let (env, contract_instance, admin) = create_variables_and_initialize_contract();
@@ -384,339 +394,199 @@ mod test {
         let (token_address, token_client) = create_token(&env, &admin);
         token_client.mint(&buyer, &4000);
 
-        let transaction_id = contract_instance
-        .create_payment(&buyer, &seller, &1000, &token_address, &20, &7);
-    let transaction = contract_instance.get_transaction(&transaction_id);
+        let transaction_id =
+            contract_instance.create_payment(&buyer, &seller, &1000, &token_address, &20, &7);
+        let transaction = contract_instance.get_transaction(&transaction_id);
 
-    assert_eq!(transaction.buyer, buyer);
-    assert_eq!(transaction.seller, seller);
-    assert_eq!(transaction.amount, 1000);
-    assert_eq!(transaction.holdback_rate, 20);
-    assert_eq!(transaction.holdback_amount, 200);
-    assert_eq!(transaction.final_amount, 800);
-    assert_eq!(transaction.status, TransactionStatus::Held);
-    assert_eq!(transaction.token, token_address);
-
+        assert_eq!(transaction.buyer, buyer);
+        assert_eq!(transaction.seller, seller);
+        assert_eq!(transaction.amount, 1000);
+        assert_eq!(transaction.holdback_rate, 20);
+        assert_eq!(transaction.holdback_amount, 200);
+        assert_eq!(transaction.final_amount, 800);
+        assert_eq!(transaction.status, TransactionStatus::Held);
+        assert_eq!(transaction.token, token_address);
     }
 
     #[test]
-fn test_approve_release() {
-    let (env, contract, admin) = create_variables_and_initialize_contract();
+    fn test_approve_release() {
+        let (env, contract, admin) = create_variables_and_initialize_contract();
 
         let (buyer, seller, _, _) = generate_addresses(&env);
 
-    let (token_address, token_client) = create_token(&env, &admin);
+        let (token_address, token_client) = create_token(&env, &admin);
         token_client.mint(&buyer, &4000);
 
-    let transaction_id = contract
-        .create_payment(&buyer, &seller, &1000, &token_address, &20, &7);
+        let transaction_id =
+            contract.create_payment(&buyer, &seller, &1000, &token_address, &20, &7);
 
-    contract.approve_release(&transaction_id, &buyer);
-    let transaction = contract.get_transaction(&transaction_id);
-    assert_eq!(transaction.status, TransactionStatus::Completed);
+        contract.approve_release(&transaction_id, &buyer);
+        let transaction = contract.get_transaction(&transaction_id);
+        assert_eq!(transaction.status, TransactionStatus::Completed);
     }
 
-
-#[test]
-fn test_time_based_release() {
-    let (env, contract, admin) = create_variables_and_initialize_contract();
+    #[test]
+    fn test_time_based_release() {
+        let (env, contract, admin) = create_variables_and_initialize_contract();
 
         let (buyer, seller, _, _) = generate_addresses(&env);
 
-    let (token_address, token_client) = create_token(&env, &admin);
+        let (token_address, token_client) = create_token(&env, &admin);
         token_client.mint(&buyer, &4000);
-    let transaction_id = contract
-        .create_payment(&buyer, &seller, &1000, &token_address, &20, &1);
+        let transaction_id =
+            contract.create_payment(&buyer, &seller, &1000, &token_address, &20, &1);
 
-    env.ledger().set_timestamp(DAY_IN_SECONDS + 1);
+        env.ledger().set_timestamp(DAY_IN_SECONDS + 1);
 
-    contract.check_and_release(&transaction_id);
-    let transaction = contract.get_transaction(&transaction_id);
-    assert_eq!(transaction.status, TransactionStatus::Completed);
-}
+        contract.check_and_release(&transaction_id);
+        let transaction = contract.get_transaction(&transaction_id);
+        assert_eq!(transaction.status, TransactionStatus::Completed);
+    }
 
-
-#[test]
-fn test_dispute_and_refunded() {
-    let (env, contract, admin) = create_variables_and_initialize_contract();
+    #[test]
+    fn test_dispute_and_refunded() {
+        let (env, contract, admin) = create_variables_and_initialize_contract();
 
         let (buyer, seller, _, _) = generate_addresses(&env);
 
-    let (token_address, token_client) = create_token(&env, &admin);
+        let (token_address, token_client) = create_token(&env, &admin);
         token_client.mint(&buyer, &4000);
 
-    let transaction_id = contract
-        .create_payment(&buyer, &seller, &1000, &token_address, &20, &7);
+        let transaction_id =
+            contract.create_payment(&buyer, &seller, &1000, &token_address, &20, &7);
 
-    contract.initiate_dispute(&transaction_id, &buyer);
-    contract.resolve_dispute(&transaction_id, &true, &admin);
+        contract.initiate_dispute(&transaction_id, &buyer);
+        contract.resolve_dispute(&transaction_id, &true, &admin);
 
-    let transaction = contract.get_transaction(&transaction_id);
-    assert_eq!(transaction.status, TransactionStatus::Cancelled);
-}
+        let transaction = contract.get_transaction(&transaction_id);
+        assert_eq!(transaction.status, TransactionStatus::Cancelled);
+    }
 
-#[test]
-#[should_panic]
-fn test_invalid_transaction() {
-    let (_, contract, _) = create_variables_and_initialize_contract();
+    #[test]
+    #[should_panic]
+    fn test_invalid_transaction() {
+        let (_, contract, _) = create_variables_and_initialize_contract();
 
-    contract.get_transaction(&999);
-}
+        contract.get_transaction(&999);
+    }
 
-
-#[test]
-#[should_panic]
-fn test_unauthorized_approve() {
-    let (env, contract, admin) = create_variables_and_initialize_contract();
+    #[test]
+    #[should_panic]
+    fn test_unauthorized_approve() {
+        let (env, contract, admin) = create_variables_and_initialize_contract();
 
         let (buyer, seller, _, _) = generate_addresses(&env);
 
-    let (token_address, token_client) = create_token(&env, &admin);
+        let (token_address, token_client) = create_token(&env, &admin);
         token_client.mint(&buyer, &4000);
-    let transaction_id = contract
-        .create_payment(&buyer, &seller, &1000, &token_address, &20, &7);
+        let transaction_id =
+            contract.create_payment(&buyer, &seller, &1000, &token_address, &20, &7);
 
-    contract.approve_release(&transaction_id, &seller);
-}
+        contract.approve_release(&transaction_id, &seller);
+    }
 
-#[test]
-#[should_panic]
-fn test_invalid_amount() {
-    let (env, contract, admin) = create_variables_and_initialize_contract();
-
-        let (buyer, seller, _, _) = generate_addresses(&env);
-
-    let (token_address, _) = create_token(&env, &admin);
-    contract
-        .create_payment(&buyer, &seller, &1000, &token_address, &20, &7);
-}
-#[test]
-#[should_panic]
-fn test_invalid_holdback_rate() {
-    let (env, contract, admin) = create_variables_and_initialize_contract();
+    #[test]
+    #[should_panic]
+    fn test_invalid_amount() {
+        let (env, contract, admin) = create_variables_and_initialize_contract();
 
         let (buyer, seller, _, _) = generate_addresses(&env);
 
-    let (token_address, token_client) = create_token(&env, &admin);
+        let (token_address, _) = create_token(&env, &admin);
+        contract.create_payment(&buyer, &seller, &1000, &token_address, &20, &7);
+    }
+    #[test]
+    #[should_panic]
+    fn test_invalid_holdback_rate() {
+        let (env, contract, admin) = create_variables_and_initialize_contract();
+
+        let (buyer, seller, _, _) = generate_addresses(&env);
+
+        let (token_address, token_client) = create_token(&env, &admin);
         token_client.mint(&buyer, &4000);
-    let transaction_id = contract
-        .create_payment(&buyer, &seller, &1000, &token_address, &0, &7);
-}
+        contract.create_payment(&buyer, &seller, &1000, &token_address, &0, &7);
+    }
 
-#[test]
-#[should_panic]
-fn test_unauthorized_dispute() {
-    let (env, contract, admin) = create_variables_and_initialize_contract();
-
-        let (buyer, seller, _, _) = generate_addresses(&env);
-
-    let (token_address, token_client) = create_token(&env, &admin);
-        token_client.mint(&buyer, &4000);
-    let transaction_id = contract
-        .create_payment(&buyer, &seller, &1000, &token_address, &20, &7);
-
-    contract.initiate_dispute(&transaction_id, &seller);
-}
-
-#[test]
-#[should_panic]
-fn test_unauthorized_resolve_dispute() {
-    let (env, contract, admin) = create_variables_and_initialize_contract();
+    #[test]
+    #[should_panic]
+    fn test_unauthorized_dispute() {
+        let (env, contract, admin) = create_variables_and_initialize_contract();
 
         let (buyer, seller, _, _) = generate_addresses(&env);
 
-    let (token_address, token_client) = create_token(&env, &admin);
+        let (token_address, token_client) = create_token(&env, &admin);
         token_client.mint(&buyer, &4000);
-    let transaction_id = contract
-        .create_payment(&buyer, &seller, &1000, &token_address, &20, &7);
+        let transaction_id =
+            contract.create_payment(&buyer, &seller, &1000, &token_address, &20, &7);
 
-    contract.initiate_dispute(&transaction_id, &buyer);
-    contract.resolve_dispute(&transaction_id, &true, &buyer);
-}
+        contract.initiate_dispute(&transaction_id, &seller);
+    }
 
-#[test]
-#[should_panic]
-fn test_approve_invalid_status() {
-    let (env, contract, admin) = create_variables_and_initialize_contract();
+    #[test]
+    #[should_panic]
+    fn test_unauthorized_resolve_dispute() {
+        let (env, contract, admin) = create_variables_and_initialize_contract();
 
         let (buyer, seller, _, _) = generate_addresses(&env);
 
-    let (token_address, token_client) = create_token(&env, &admin);
+        let (token_address, token_client) = create_token(&env, &admin);
         token_client.mint(&buyer, &4000);
-    let transaction_id = contract
-        .create_payment(&buyer, &seller, &1000, &token_address, &20, &7);
+        let transaction_id =
+            contract.create_payment(&buyer, &seller, &1000, &token_address, &20, &7);
 
-    contract.initiate_dispute(&transaction_id, &buyer);
-    contract.approve_release(&transaction_id, &buyer);
-}
+        contract.initiate_dispute(&transaction_id, &buyer);
+        contract.resolve_dispute(&transaction_id, &true, &buyer);
+    }
 
-#[test]
-#[should_panic]
-fn test_buyer_is_seller() {
-    let (env, contract, admin) = create_variables_and_initialize_contract();
+    #[test]
+    #[should_panic]
+    fn test_approve_invalid_status() {
+        let (env, contract, admin) = create_variables_and_initialize_contract();
+
+        let (buyer, seller, _, _) = generate_addresses(&env);
+
+        let (token_address, token_client) = create_token(&env, &admin);
+        token_client.mint(&buyer, &4000);
+        let transaction_id =
+            contract.create_payment(&buyer, &seller, &1000, &token_address, &20, &7);
+
+        contract.initiate_dispute(&transaction_id, &buyer);
+        contract.approve_release(&transaction_id, &buyer);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_buyer_is_seller() {
+        let (env, contract, admin) = create_variables_and_initialize_contract();
 
         let (buyer, _, _, _) = generate_addresses(&env);
 
-    let (token_address, token_client) = create_token(&env, &admin);
+        let (token_address, token_client) = create_token(&env, &admin);
         token_client.mint(&buyer, &4000);
-    let transaction_id = contract
-        .create_payment(&buyer, &buyer, &1000, &token_address, &20, &7);
-}
+        contract.create_payment(&buyer, &buyer, &1000, &token_address, &20, &7);
+    }
 
-#[test]
-#[should_panic]
-fn test_buyer_is_admin() {
-    let (env, contract, admin) = create_variables_and_initialize_contract();
+    #[test]
+    #[should_panic]
+    fn test_buyer_is_admin() {
+        let (env, contract, admin) = create_variables_and_initialize_contract();
 
         let (buyer, seller, _, _) = generate_addresses(&env);
 
-    let (token_address, token_client) = create_token(&env, &admin);
+        let (token_address, token_client) = create_token(&env, &admin);
         token_client.mint(&buyer, &4000);
-    let transaction_id = contract
-        .create_payment(&admin, &seller, &1000, &token_address, &20, &7);
-}
+        contract.create_payment(&admin, &seller, &1000, &token_address, &20, &7);
+    }
 
-#[test]
-#[should_panic]
-fn test_seller_is_token() {
-    let (env, contract, admin) = create_variables_and_initialize_contract();
+    #[test]
+    #[should_panic]
+    fn test_seller_is_token() {
+        let (env, contract, admin) = create_variables_and_initialize_contract();
 
-        let (buyer, seller, _, _) = generate_addresses(&env);
+        let (buyer, _, _, _) = generate_addresses(&env);
 
-    let (token_address, token_client) = create_token(&env, &admin);
+        let (token_address, token_client) = create_token(&env, &admin);
         token_client.mint(&buyer, &4000);
-    let transaction_id = contract
-        .create_payment(&buyer, &token_address, &1000, &token_address, &20, &7);
+        contract.create_payment(&buyer, &token_address, &1000, &token_address, &20, &7);
+    }
 }
-}
-
-// #[test]
-// #[should_panic(expected = "Status: InvalidHoldbackRate")]
-// fn test_invalid_holdback_rate() {
-//     let env = Env::default();
-//     env.mock_all_auths();
-//     let contract_id = env.register_contract(None, HoldBackContract);
-//     let contract = HoldBackContract::new(&env, &contract_id);
-//     let admin = Address::random(&env);
-//     let buyer = Address::random(&env);
-//     let seller = Address::random(&env);
-//     let token = env.register_stellar_asset_contract(Address::random(&env));
-
-//     contract.initialize(admin).unwrap();
-//     contract
-//         .create_payment(buyer, seller, 1000, token, 101, 7)
-//         .unwrap();
-// }
-
-// #[test]
-// #[should_panic(expected = "Status: Unauthorized")]
-// fn test_unauthorized_dispute() {
-//     let env = Env::default();
-//     env.mock_all_auths();
-//     let contract_id = env.register_contract(None, HoldBackContract);
-//     let contract = HoldBackContract::new(&env, &contract_id);
-//     let admin = Address::random(&env);
-//     let buyer = Address::random(&env);
-//     let seller = Address::random(&env);
-//     let token = env.register_stellar_asset_contract(Address::random(&env));
-
-//     contract.initialize(admin).unwrap();
-//     let transaction_id = contract
-//         .create_payment(buyer, seller.clone(), 1000, token, 20, 7)
-//         .unwrap();
-
-//     contract.initiate_dispute(transaction_id, seller).unwrap();
-// }
-
-// #[test]
-// #[should_panic(expected = "Status: Unauthorized")]
-// fn test_unauthorized_resolve_dispute() {
-//     let env = Env::default();
-//     env.mock_all_auths();
-//     let contract_id = env.register_contract(None, HoldBackContract);
-//     let contract = HoldBackContract::new(&env, &contract_id);
-//     let admin = Address::random(&env);
-//     let buyer = Address::random(&env);
-//     let seller = Address::random(&env);
-//     let token = env.register_stellar_asset_contract(Address::random(&env));
-
-//     contract.initialize(admin).unwrap();
-//     let transaction_id = contract
-//         .create_payment(buyer.clone(), seller, 1000, token, 20, 7)
-//         .unwrap();
-
-//     contract.initiate_dispute(transaction_id, buyer).unwrap();
-//     contract.resolve_dispute(transaction_id, true, buyer).unwrap();
-// }
-
-// #[test]
-// #[should_panic(expected = "Status: InvalidStatus")]
-// fn test_approve_invalid_status() {
-//     let env = Env::default();
-//     env.mock_all_auths();
-//     let contract_id = env.register_contract(None, HoldBackContract);
-//     let contract = HoldBackContract::new(&env, &contract_id);
-//     let admin = Address::random(&env);
-//     let buyer = Address::random(&env);
-//     let seller = Address::random(&env);
-//     let token = env.register_stellar_asset_contract(Address::random(&env));
-
-//     contract.initialize(admin).unwrap();
-//     let transaction_id = contract
-//         .create_payment(buyer.clone(), seller, 1000, token, 20, 7)
-//         .unwrap();
-
-//     contract.initiate_dispute(transaction_id, buyer.clone()).unwrap();
-//     contract.approve_release(transaction_id, buyer).unwrap();
-// }
-
-// #[test]
-// #[should_panic(expected = "Status: InvalidBuyer")]
-// fn test_buyer_is_seller() {
-//     let env = Env::default();
-//     env.mock_all_auths();
-//     let contract_id = env.register_contract(None, HoldBackContract);
-//     let contract = HoldBackContract::new(&env, &contract_id);
-//     let admin = Address::random(&env);
-//     let buyer = Address::random(&env);
-//     let token = env.register_stellar_asset_contract(Address::random(&env));
-
-//     contract.initialize(admin).unwrap();
-//     contract
-//         .create_payment(buyer.clone(), buyer, 1000, token, 20, 7)
-//         .unwrap();
-// }
-
-// #[test]
-// #[should_panic(expected = "Status: InvalidBuyer")]
-// fn test_buyer_is_admin() {
-//     let env = Env::default();
-//     env.mock_all_auths();
-//     let contract_id = env.register_contract(None, HoldBackContract);
-//     let contract = HoldBackContract::new(&env, &contract_id);
-//     let admin = Address::random(&env);
-//     let seller = Address::random(&env);
-//     let token = env.register_stellar_asset_contract(Address::random(&env));
-
-//     contract.initialize(admin.clone()).unwrap();
-//     contract
-//         .create_payment(admin, seller, 1000, token, 20, 7)
-//         .unwrap();
-// }
-
-// #[test]
-// #[should_panic(expected = "Status: InvalidSeller")]
-// fn test_seller_is_token() {
-//     let env = Env::default();
-//     env.mock_all_auths();
-//     let contract_id = env.register_contract(None, HoldBackContract);
-//     let contract = HoldBackContract::new(&env, &contract_id);
-//     let admin = Address::random(&env);
-//     let buyer = Address::random(&env);
-//     let token = env.register_stellar_asset_contract(Address::random(&env));
-
-//     contract.initialize(admin).unwrap();
-//     contract
-//         .create_payment(buyer, token, 1000, token, 20, 7)
-//         .unwrap();
-// }
