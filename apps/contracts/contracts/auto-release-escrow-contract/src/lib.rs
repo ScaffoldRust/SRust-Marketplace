@@ -1,18 +1,15 @@
 #![no_std]
 
 mod error;
-mod event;
 mod escrow_logic;
+mod event;
 mod storage;
 #[cfg(test)]
 mod test;
 
 use soroban_sdk::{contract, contractimpl, Address, Env, String};
 
-use crate::{
-    error::ContractError,
-    storage::Escrow,
-};
+use crate::{error::ContractError, storage::Escrow};
 
 #[contract]
 pub struct AutoReleaseEscrowContract;
@@ -50,11 +47,7 @@ impl AutoReleaseEscrowContract {
 
     /// Allows the buyer to confirm they have received the goods/service,
     /// enabling an early release of funds.
-    pub fn confirm_receipt(
-        env: Env,
-        buyer: Address,
-        escrow_id: u64,
-    ) -> Result<(), ContractError> {
+    pub fn confirm_receipt(env: Env, buyer: Address, escrow_id: u64) -> Result<(), ContractError> {
         escrow_logic::confirm_receipt(&env, buyer, escrow_id)
     }
 

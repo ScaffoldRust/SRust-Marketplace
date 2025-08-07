@@ -2,7 +2,7 @@ use crate::error::ContractError;
 use crate::events::*;
 use crate::refund_storage::*;
 use crate::storage;
-use soroban_sdk::{Address, Env, String, Vec, token};
+use soroban_sdk::{token, Address, Env, String, Vec};
 
 pub fn create_refund_contract(
     env: &Env,

@@ -8,12 +8,13 @@ use soroban_sdk::{
 };
 use token::StellarAssetClient as TokenAdminClient;
 
-
 fn create_token_contract<'a>(
     env: &Env,
     admin: &Address,
 ) -> (token::Client<'a>, TokenAdminClient<'a>) {
-    let token_address = env.register_stellar_asset_contract_v2(admin.clone()).address();
+    let token_address = env
+        .register_stellar_asset_contract_v2(admin.clone())
+        .address();
     (
         token::Client::new(env, &token_address),
         TokenAdminClient::new(env, &token_address),
@@ -87,7 +88,11 @@ fn test_make_partial_and_full_deposit() {
     let test = DepositTest::setup();
     let deadline = test.env.ledger().timestamp() + 3600;
     let tx_id = test.contract.start_transaction(
-        &test.buyer, &test.seller, &1000, &test.token.address, &deadline
+        &test.buyer,
+        &test.seller,
+        &1000,
+        &test.token.address,
+        &deadline,
     );
 
     // First partial deposit
@@ -110,16 +115,20 @@ fn test_claim_payment() {
     let test = DepositTest::setup();
     let deadline = test.env.ledger().timestamp() + 3600;
     let tx_id = test.contract.start_transaction(
-        &test.buyer, &test.seller, &1000, &test.token.address, &deadline
+        &test.buyer,
+        &test.seller,
+        &1000,
+        &test.token.address,
+        &deadline,
     );
     test.contract.make_deposit(&test.buyer, &tx_id, &1000);
 
     // Seller claims payment
     test.contract.claim_payment(&test.seller, &tx_id);
-    
+
     let tx = test.contract.get_transaction(&tx_id);
     assert_eq!(tx.status, TransactionStatus::Completed);
-    
+
     // Check balances
     assert_eq!(test.token.balance(&test.seller), 1000);
     assert_eq!(test.token.balance(&test.contract.address), 0);
@@ -131,7 +140,11 @@ fn test_claim_payment_errors() {
     let test = DepositTest::setup();
     let deadline = test.env.ledger().timestamp() + 3600;
     let tx_id = test.contract.start_transaction(
-        &test.buyer, &test.seller, &1000, &test.token.address, &deadline
+        &test.buyer,
+        &test.seller,
+        &1000,
+        &test.token.address,
+        &deadline,
     );
     test.contract.make_deposit(&test.buyer, &tx_id, &500);
 
@@ -149,7 +162,11 @@ fn test_request_refund_after_deadline() {
     let test = DepositTest::setup();
     let deadline = test.env.ledger().timestamp() + 10;
     let tx_id = test.contract.start_transaction(
-        &test.buyer, &test.seller, &1000, &test.token.address, &deadline
+        &test.buyer,
+        &test.seller,
+        &1000,
+        &test.token.address,
+        &deadline,
     );
     test.contract.make_deposit(&test.buyer, &tx_id, &300);
 
@@ -172,7 +189,11 @@ fn test_request_refund_errors() {
     let test = DepositTest::setup();
     let deadline = test.env.ledger().timestamp() + 3600;
     let tx_id = test.contract.start_transaction(
-        &test.buyer, &test.seller, &1000, &test.token.address, &deadline
+        &test.buyer,
+        &test.seller,
+        &1000,
+        &test.token.address,
+        &deadline,
     );
     test.contract.make_deposit(&test.buyer, &tx_id, &300);
 
@@ -182,7 +203,7 @@ fn test_request_refund_errors() {
 
     // Fully fund the transaction
     test.contract.make_deposit(&test.buyer, &tx_id, &700);
-    
+
     // Advance time past the deadline
     test.env.ledger().with_mut(|l| l.timestamp = deadline + 10);
 
@@ -196,7 +217,11 @@ fn test_cancel_transaction() {
     let test = DepositTest::setup();
     let deadline = test.env.ledger().timestamp() + 3600;
     let tx_id = test.contract.start_transaction(
-        &test.buyer, &test.seller, &1000, &test.token.address, &deadline
+        &test.buyer,
+        &test.seller,
+        &1000,
+        &test.token.address,
+        &deadline,
     );
     test.contract.make_deposit(&test.buyer, &tx_id, &200);
 

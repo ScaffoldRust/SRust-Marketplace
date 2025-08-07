@@ -28,7 +28,6 @@ pub fn set_admin(env: &Env, admin: Address, new_admin: Address) -> Result<(), Co
     Ok(())
 }
 
-
 /// Creates a new escrow agreement and immediately locks the buyer's funds.
 pub fn create_escrow(
     env: &Env,
@@ -90,7 +89,6 @@ pub fn confirm_receipt(env: &Env, buyer: Address, escrow_id: u64) -> Result<(), 
     Ok(())
 }
 
-
 /// Releases funds to the seller if the release time has passed OR the buyer has confirmed.
 pub fn release_funds(env: &Env, escrow_id: u64) -> Result<(), ContractError> {
     let mut escrow = storage::get_escrow(env, escrow_id)?;
@@ -99,7 +97,8 @@ pub fn release_funds(env: &Env, escrow_id: u64) -> Result<(), ContractError> {
         return Err(ContractError::EscrowNotActive);
     }
 
-    let can_release = env.ledger().timestamp() >= escrow.release_timestamp || escrow.buyer_confirmed;
+    let can_release =
+        env.ledger().timestamp() >= escrow.release_timestamp || escrow.buyer_confirmed;
     if !can_release {
         return Err(ContractError::ReleaseTimeNotPassed);
     }
