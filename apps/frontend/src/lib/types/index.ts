@@ -6,7 +6,15 @@
         created_at: string;
         updated_at: string;
     }
-    
+
+    export interface Profile {
+        id: string;
+        user_type: 'buyer' | 'seller' | 'both';
+        display_name: string | null;
+        created_at: string;
+        updated_at: string;
+    }
+
     export interface Product {
         id: string;
         title: string;

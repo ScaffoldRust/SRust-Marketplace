@@ -14,6 +14,7 @@ import {
 } from "@/app/components/ui/form";
 import { Input } from "@/app/components/ui/input";
 import { Loader2 } from "lucide-react";
+import { useAuth } from "@/app/contexts/AuthContext";
 import { Button } from "../../ui/button";
 
 const formSchema = z.object({
@@ -35,7 +36,7 @@ export default function LoginForm({
   onRegisterClick,
 }: LoginFormProps) {
   const [isLoading, setIsLoading] = useState(false);
-
+  const { signIn } = useAuth();
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -48,9 +49,7 @@ export default function LoginForm({
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      console.log("Login form submitted:", values);
+      await signIn(values.email, values.password);;
       onSuccess();
     } catch (error) {
       console.error("Login error:", error);

@@ -1,0 +1,11 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/auth/callback/route": "app/api/auth/callback/route.js",
+  "/api/auth/reset-password/route": "app/api/auth/reset-password/route.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/auth-demo/page": "app/auth-demo/page.js",
+  "/marketplace/page": "app/marketplace/page.js",
+  "/page": "app/page.js",
+  "/profile/page": "app/profile/page.js",
+  "/seller/dashboard/page": "app/seller/dashboard/page.js"
+}

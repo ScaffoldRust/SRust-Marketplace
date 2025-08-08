@@ -17,6 +17,7 @@ import { Input } from "@/app/components/ui/input";
 import { Textarea } from "@/app/components/ui/textarea";
 import { Loader2 } from "lucide-react";
 import FileUpload from "../ui/FileUpload";
+import { useAuth } from "@/app/contexts/AuthContext";
 import { Button } from "../../ui/button";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -61,7 +62,7 @@ interface CreateStoreFormProps {
 
 export default function CreateStoreForm({ onSuccess }: CreateStoreFormProps) {
   const [isLoading, setIsLoading] = useState(false);
-
+  const { createStore } = useAuth();
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -75,8 +76,13 @@ export default function CreateStoreForm({ onSuccess }: CreateStoreFormProps) {
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await createStore({
+        name: values.storeName,
+        description: values.storeDescription,
+        logo: values.logo,
+        stellar_wallet_address: values.walletAddress,
+      });
+
       console.log("Store creation form submitted:", values);
       onSuccess();
     } catch (error) {

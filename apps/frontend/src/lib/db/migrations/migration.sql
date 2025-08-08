@@ -1,6 +1,41 @@
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- User Profiles Table
+CREATE TABLE IF NOT EXISTS profiles (
+  id UUID REFERENCES auth.users ON DELETE CASCADE NOT NULL PRIMARY KEY,
+  user_type TEXT CHECK (user_type IN ('buyer', 'seller', 'both')) NOT NULL,
+  display_name TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+);
+
+-- Create a function to check if a user is an admin
+CREATE OR REPLACE FUNCTION is_admin()
+RETURNS BOOLEAN AS $$
+BEGIN
+    IF auth.uid() IS NULL THEN
+        RETURN false;
+    END IF;
+    
+    IF EXISTS (
+        SELECT 1 FROM user_roles
+        WHERE user_id = auth.uid() AND role = 'admin'
+    ) THEN
+        RETURN true;
+    END IF;
+    
+    IF EXISTS (
+        SELECT 1 FROM auth.users
+        WHERE id = auth.uid() AND raw_user_meta_data->>'role' = 'admin'
+    ) THEN
+        RETURN true;
+    END IF;
+    
+    RETURN false;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- User roles for admin functions
 CREATE TABLE IF NOT EXISTS user_roles (
     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -74,6 +109,8 @@ CREATE INDEX IF NOT EXISTS idx_wishlist_user_id ON wishlist_items(user_id);
 CREATE INDEX IF NOT EXISTS idx_cart_user_id ON cart_items(user_id);
 
 -- Enable RLS on all tables
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_roles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE product_images ENABLE ROW LEVEL SECURITY;
@@ -128,3 +165,58 @@ ON cart_items FOR UPDATE USING (auth.uid() = user_id);
 
 CREATE POLICY "Users can delete from their own cart" 
 ON cart_items FOR DELETE USING (auth.uid() = user_id);
+
+-- Profiles Table Policies
+CREATE POLICY "Users can view their own profile" 
+ON profiles FOR SELECT USING (auth.uid() = id);
+
+CREATE POLICY "Users can insert their own profile" 
+ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
+
+CREATE POLICY "Users can update their own profile" 
+ON profiles FOR UPDATE USING (auth.uid() = id);
+
+-- User Roles Table Policies
+CREATE POLICY "Admins can view all user roles" 
+ON user_roles FOR SELECT USING (is_admin());
+
+CREATE POLICY "Admins can insert user roles" 
+ON user_roles FOR INSERT WITH CHECK (is_admin());
+
+CREATE POLICY "Admins can update user roles" 
+ON user_roles FOR UPDATE USING (is_admin());
+
+CREATE POLICY "Admins can delete user roles" 
+ON user_roles FOR DELETE USING (is_admin());
+
+-- Grant permissions for is_admin function
+GRANT EXECUTE ON FUNCTION is_admin() TO authenticated;
+
+-- Function to create profile on user signup (FIXED VERSION)
+CREATE OR REPLACE FUNCTION handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- Add a small delay to ensure user is fully committed
+    PERFORM pg_sleep(0.1);
+    
+    INSERT INTO public.profiles (id, user_type, display_name)
+    VALUES (
+        NEW.id,
+        COALESCE(NEW.raw_user_meta_data->>'user_type', 'buyer'),
+        COALESCE(NEW.raw_user_meta_data->>'display_name', '')
+    );
+    RETURN NEW;
+EXCEPTION WHEN OTHERS THEN
+    -- Log the error but don't fail the user creation
+    RAISE WARNING 'Failed to create profile for user %: %', NEW.id, SQLERRM;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger to create profile on user signup (FIXED VERSION)
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+    AFTER INSERT ON auth.users
+    FOR EACH ROW 
+    EXECUTE FUNCTION handle_new_user();
+

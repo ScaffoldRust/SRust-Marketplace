@@ -1,6 +1,5 @@
 #![no_std]
 #![allow(dead_code)]
-
 mod clawback_delay;
 mod contract;
 mod deposit;
