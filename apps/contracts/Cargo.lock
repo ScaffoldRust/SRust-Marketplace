@@ -713,6 +713,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "hold_back_contract"
+version = "0.1.0"
+dependencies = [
+ "soroban-sdk 22.0.8",
+]
+
+[[package]]
 name = "iana-time-zone"
 version = "0.1.63"
 source = "registry+https://github.com/rust-lang/crates.io-index"

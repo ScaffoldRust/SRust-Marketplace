@@ -4,7 +4,7 @@ extern crate std;
 use crate::error::ContractError;
 use crate::escrow_storage::EscrowStatus;
 use crate::{EscrowArbitrationContract, EscrowArbitrationContractClient};
-use soroban_sdk::{Address, Env, String, testutils::Address as _, token};
+use soroban_sdk::{testutils::Address as _, token, Address, Env, String};
 use token::Client as TokenClient;
 use token::StellarAssetClient as TokenAdminClient;
 

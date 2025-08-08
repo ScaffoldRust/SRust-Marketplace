@@ -2,7 +2,7 @@ use crate::error::ContractError;
 use crate::escrow_storage;
 use crate::escrow_storage::*;
 use crate::events::*;
-use soroban_sdk::{Address, Env, String, Vec, token};
+use soroban_sdk::{token, Address, Env, String, Vec};
 
 pub fn create_escrow(
     env: &Env,

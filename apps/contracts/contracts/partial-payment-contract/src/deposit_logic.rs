@@ -113,11 +113,7 @@ pub fn claim_payment(env: &Env, seller: Address, transaction_id: u64) -> Result<
 }
 
 /// Allows the buyer to get a refund if the deadline has passed.
-pub fn request_refund(
-    env: &Env,
-    buyer: Address,
-    transaction_id: u64,
-) -> Result<(), ContractError> {
+pub fn request_refund(env: &Env, buyer: Address, transaction_id: u64) -> Result<(), ContractError> {
     buyer.require_auth();
 
     let mut transaction = storage::get_transaction(env, transaction_id)?;
@@ -128,7 +124,9 @@ pub fn request_refund(
     if env.ledger().timestamp() <= transaction.deadline {
         return Err(ContractError::DeadlineNotPassed);
     }
-    if transaction.status == TransactionStatus::Funded || transaction.status == TransactionStatus::Completed {
+    if transaction.status == TransactionStatus::Funded
+        || transaction.status == TransactionStatus::Completed
+    {
         // If fully funded, the deal is locked in. No refunds.
         return Err(ContractError::TransactionFullyFunded);
     }
@@ -160,7 +158,9 @@ pub fn cancel_transaction(
     if transaction.buyer != canceller && transaction.seller != canceller {
         return Err(ContractError::NotParticipant);
     }
-    if transaction.status == TransactionStatus::Funded || transaction.status == TransactionStatus::Completed {
+    if transaction.status == TransactionStatus::Funded
+        || transaction.status == TransactionStatus::Completed
+    {
         return Err(ContractError::TransactionFullyFunded);
     }
 
