@@ -20,6 +20,7 @@ contracts/
 ├── mutual-cancellation-contract/    # Cooperative transaction cancellation
 ├── staggered-payment-contract/      # Time-based payment scheduling
 └── timelock-contract/               # Time-locked token deposits
+└── hold_back_contract/               # Hold a portion of the payment temporarily 
 ```
 
 ## Contract Descriptions
@@ -50,6 +51,10 @@ Implements time-based payment scheduling with verification steps, suitable for s
 
 ### Timelock Contract
 Creates time-locked token deposits that cannot be withdrawn until a specified time has elapsed, with optional clawback mechanisms.
+
+### Holdback COntract
+ This contract ensures that a portion of the payment is held back temporarily after the transaction is completed, serving as a guarantee to incentivize quality and reduce potential disputes. The holdback amount is released only after a predefined period or condition, such as buyer approval or the absence of disputes.
+
 
 ## Getting Started
 

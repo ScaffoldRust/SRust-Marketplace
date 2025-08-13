@@ -9,10 +9,7 @@ mod test;
 
 use soroban_sdk::{contract, contractimpl, Address, Env};
 
-use crate::{
-    error::ContractError,
-    storage::Transaction,
-};
+use crate::{error::ContractError, storage::Transaction};
 
 #[contract]
 pub struct PartialPaymentContract;
@@ -28,14 +25,7 @@ impl PartialPaymentContract {
         payment_token: Address,
         deadline: u64, // A timestamp by which the full payment must be completed
     ) -> Result<u64, ContractError> {
-        deposit_logic::start_transaction(
-            &env,
-            buyer,
-            seller,
-            total_amount,
-            payment_token,
-            deadline,
-        )
+        deposit_logic::start_transaction(&env, buyer, seller, total_amount, payment_token, deadline)
     }
 
     /// Allows a buyer to make a partial deposit towards a transaction.

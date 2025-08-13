@@ -9,10 +9,7 @@ mod test;
 
 use soroban_sdk::{contract, contractimpl, Address, Env, String};
 
-use crate::{
-    error::ContractError,
-    storage::Auction,
-};
+use crate::{error::ContractError, storage::Auction};
 
 #[contract]
 pub struct AutomatedAuctionContract;
@@ -56,11 +53,7 @@ impl AutomatedAuctionContract {
     }
 
     /// Allows the seller to cancel an auction before any bids have been placed.
-    pub fn cancel_auction(
-        env: Env,
-        seller: Address,
-        auction_id: u64,
-    ) -> Result<(), ContractError> {
+    pub fn cancel_auction(env: Env, seller: Address, auction_id: u64) -> Result<(), ContractError> {
         auction_logic::cancel_auction(&env, seller, auction_id)
     }
 

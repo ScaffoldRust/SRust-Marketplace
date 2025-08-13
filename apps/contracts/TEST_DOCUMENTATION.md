@@ -14,6 +14,7 @@ This document provides an overview of the test coverage for each smart contract 
 8. [Mutual Cancellation Contract](#mutual-cancellation-contract)
 9. [Staggered Payment Contract](#staggered-payment-contract)
 10. [Timelock Contract](#timelock-contract)
+11.  [Holdback Contract](#holdback-contract)
 
 ## Conditional Refund Contract
 
@@ -149,6 +150,22 @@ The timelock contract tests verify the functionality of time-locked token deposi
 - Authorization checks
 - Event emission
 
+## Holdback Contract
+
+The holdback contract tests verify the functionality of a holdback guarantee mechanism for secure marketplace transactions.
+
+### Test Coverage
+
+- Contract initialization
+- Creating payments with holdback
+- Buyer-approved holdback release
+- Time-based holdback release
+- Dispute initiation and resolution (refund and release scenarios)
+- Handling invalid inputs (amount, holdback rate)
+- Unauthorized access prevention
+- Invalid state transitions
+- Edge cases (buyer as seller/admin, non-existent transactions)
+
 ## Running the Tests
 
 To run all tests for all contracts:
@@ -156,7 +173,7 @@ To run all tests for all contracts:
 ```bash
 cargo test
 ```
-
+ 
 To run tests for a specific contract:
 
 ```bash
@@ -183,3 +200,4 @@ cargo test -p conditional_refund_contract
 | Mutual Cancellation | 0 | 0 | 0 | None |
 | Staggered Payment | 6 | 6 | 0 | Medium |
 | Timelock | 17 | 17 | 0 | High |
+| Holdback | 15 | 15 | 0 | High
