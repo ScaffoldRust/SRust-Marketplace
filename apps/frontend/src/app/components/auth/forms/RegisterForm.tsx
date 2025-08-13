@@ -14,16 +14,11 @@ import {
 } from "@/app/components/ui/form";
 import { Input } from "@/app/components/ui/input";
 import { Loader2 } from "lucide-react";
+import { useAuth } from "@/app/contexts/AuthContext";
 import { Button } from "../../ui/button";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
-  username: z
-    .string()
-    .min(3, { message: "Username must be at least 3 characters" })
-    .regex(/^[a-zA-Z0-9_]+$/, {
-      message: "Username can only contain letters, numbers and underscores",
-    }),
   password: z
     .string()
     .min(8, { message: "Password must be at least 8 characters" })
@@ -31,6 +26,14 @@ const formSchema = z.object({
       message:
         "Password must contain at least one uppercase letter, one lowercase letter, and one number",
     }),
+    displayName: z
+    .string()
+    .min(3, { message: "Displayname must be at least 3 characters" })
+    .regex(/^[a-zA-Z0-9_]+$/, {
+      message: "Username can only contain letters, numbers and underscores",
+    }),
+    userType: z.enum(["buyer", "seller", "both"]),
+
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -45,13 +48,15 @@ export default function RegisterForm({
   onLoginClick,
 }: RegisterFormProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const { signUp, setUserType } = useAuth();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
-      username: "",
       password: "",
+      displayName: "",
+      userType: "buyer",
     },
   });
 
@@ -59,9 +64,7 @@ export default function RegisterForm({
     setIsLoading(true);
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      console.log("Register form submitted:", values);
+      await signUp(values.email, values.password, values.displayName, values.userType);
       onSuccess();
     } catch (error) {
       console.error("Registration error:", error);
@@ -101,10 +104,10 @@ export default function RegisterForm({
 
           <FormField
             control={form.control}
-            name="username"
+            name="displayName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Username</FormLabel>
+                <FormLabel>Display name</FormLabel>
                 <FormControl>
                   <Input
                     placeholder="stellar_user"

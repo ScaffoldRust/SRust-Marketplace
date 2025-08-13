@@ -54,6 +54,7 @@ fn test_deposit_and_approve_flow() {
     token_sac.mint(&buyer, &1000);
 
     // Deploy and initialize escrow
+
     let escrow_address = env.register(EscrowContract, ());
     let escrow = EscrowContractClient::new(&env, &escrow_address);
 

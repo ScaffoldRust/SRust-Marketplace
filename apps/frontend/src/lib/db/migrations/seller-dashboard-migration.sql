@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS stores (
     name TEXT NOT NULL,
     description TEXT,
     owner_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    stellar_wallet_address TEXT;
     slug TEXT UNIQUE NOT NULL,
     logo_url TEXT,
     banner_url TEXT,
@@ -373,6 +374,7 @@ CREATE OR REPLACE FUNCTION calculate_daily_analytics(
     target_date DATE
 ) RETURNS VOID AS $$
 DECLARE
+    target_date DATE := target_timestamp::date;
     daily_revenue DECIMAL;
     daily_orders INTEGER;
     daily_new_customers INTEGER;
@@ -557,11 +559,20 @@ CREATE TRIGGER trigger_track_order_status_change
     FOR EACH ROW
     EXECUTE FUNCTION track_order_status_change();
 
+CREATE OR REPLACE FUNCTION trigger_calculate_daily_analytics_wrapper()
+RETURNS TRIGGER AS $$
+BEGIN
+    PERFORM calculate_daily_analytics(NEW.store_id, NEW.created_at::date);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 DROP TRIGGER IF EXISTS trigger_calculate_daily_analytics ON orders;
 CREATE TRIGGER trigger_calculate_daily_analytics
     AFTER INSERT OR UPDATE ON orders
     FOR EACH ROW
-    EXECUTE FUNCTION calculate_daily_analytics(NEW.store_id, DATE(NEW.created_at));
+    EXECUTE FUNCTION trigger_calculate_daily_analytics_wrapper();
+
 
 -- Enable RLS on all new tables
 ALTER TABLE stores ENABLE ROW LEVEL SECURITY;

@@ -2,6 +2,7 @@ import { Product } from './database.types';
 import { Category } from './database.types';
 import { WishlistItem } from './database.types';
 import { CartItem } from './database.types';
+
     export interface PaginationParams {
         page?: number;
         limit?: number;
