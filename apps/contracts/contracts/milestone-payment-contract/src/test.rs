@@ -4,7 +4,7 @@ extern crate std;
 use crate::error::ContractError;
 use crate::milestone_storage::{ContractStatus, MilestoneData, MilestoneStatus};
 use crate::{MilestonePaymentContract, MilestonePaymentContractClient};
-use soroban_sdk::{Address, Env, String, testutils::Address as _, token, vec};
+use soroban_sdk::{testutils::Address as _, token, vec, Address, Env, String};
 use token::Client as TokenClient;
 use token::StellarAssetClient as TokenAdminClient;
 

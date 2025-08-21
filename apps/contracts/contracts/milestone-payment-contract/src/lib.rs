@@ -7,7 +7,7 @@ mod milestone_storage;
 mod storage;
 mod test;
 
-use soroban_sdk::{Address, Env, Vec, contract, contractimpl};
+use soroban_sdk::{contract, contractimpl, Address, Env, Vec};
 
 pub use contract::*;
 pub use error::*;

@@ -1,7 +1,13 @@
-use soroban_sdk::{symbol_short, Address, Env,};
+use soroban_sdk::{symbol_short, Address, Env};
 
 /// Emits an event when a new transaction is started.
-pub fn transaction_started(env: &Env, transaction_id: u64, buyer: &Address, seller: &Address, total_amount: i128) {
+pub fn transaction_started(
+    env: &Env,
+    transaction_id: u64,
+    buyer: &Address,
+    seller: &Address,
+    total_amount: i128,
+) {
     let topics = (symbol_short!("started"), buyer.clone(), seller.clone());
     let data = (transaction_id, total_amount);
     env.events().publish(topics, data);

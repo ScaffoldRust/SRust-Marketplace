@@ -66,7 +66,7 @@ pub fn place_bid(
     if bid_amount < auction.highest_bid + auction.min_bid_increment {
         return Err(ContractError::BidTooLow);
     }
-    
+
     // If there was a previous bidder, refund their bid.
     if let Some(previous_bidder) = auction.highest_bidder {
         let token_client = token::Client::new(env, &auction.payment_token);
@@ -139,7 +139,7 @@ pub fn cancel_auction(env: &Env, seller: Address, auction_id: u64) -> Result<(),
     if auction.status == AuctionStatus::Active {
         return Err(ContractError::AuctionHasBids);
     }
-    
+
     if auction.status == AuctionStatus::Closed {
         return Err(ContractError::AuctionHasEnded);
     }

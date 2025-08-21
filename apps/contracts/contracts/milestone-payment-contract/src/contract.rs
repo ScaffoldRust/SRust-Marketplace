@@ -3,7 +3,7 @@ use crate::events::*;
 use crate::milestone_storage;
 use crate::milestone_storage::*;
 use crate::storage;
-use soroban_sdk::{Address, Env, String, Vec, token};
+use soroban_sdk::{token, Address, Env, String, Vec};
 
 // Validate milestone data
 fn validate_milestones(

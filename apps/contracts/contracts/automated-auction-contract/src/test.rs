@@ -15,7 +15,9 @@ fn create_token_contract<'a>(
     env: &Env,
     admin: &Address,
 ) -> (token::Client<'a>, TokenAdminClient<'a>) {
-    let token_address = env.register_stellar_asset_contract_v2(admin.clone()).address();
+    let token_address = env
+        .register_stellar_asset_contract_v2(admin.clone())
+        .address();
     (
         token::Client::new(env, &token_address),
         TokenAdminClient::new(env, &token_address),
@@ -90,7 +92,12 @@ fn test_create_auction() {
 fn test_place_bid_success() {
     let test = AuctionTest::setup();
     let auction_id = test.contract.create_auction(
-        &test.seller, &"Item".into_val(&test.env), &100, &10, &3600, &test.token.address
+        &test.seller,
+        &"Item".into_val(&test.env),
+        &100,
+        &10,
+        &3600,
+        &test.token.address,
     );
 
     test.contract.place_bid(&test.bidder1, &auction_id, &110);
@@ -109,7 +116,12 @@ fn test_place_bid_success() {
 fn test_outbid_and_refund() {
     let test = AuctionTest::setup();
     let auction_id = test.contract.create_auction(
-        &test.seller, &"Item".into_val(&test.env), &100, &10, &3600, &test.token.address
+        &test.seller,
+        &"Item".into_val(&test.env),
+        &100,
+        &10,
+        &3600,
+        &test.token.address,
     );
 
     // Bidder 1 places a bid
@@ -134,25 +146,36 @@ fn test_outbid_and_refund() {
 fn test_place_bid_errors() {
     let test = AuctionTest::setup();
     let auction_id = test.contract.create_auction(
-        &test.seller, &"Item".into_val(&test.env), &100, &10, &10, &test.token.address
+        &test.seller,
+        &"Item".into_val(&test.env),
+        &100,
+        &10,
+        &10,
+        &test.token.address,
     );
 
     // Bid too low (not meeting minimum increment)
-    let result_low = test.contract.try_place_bid(&test.bidder1, &auction_id, &105);
+    let result_low = test
+        .contract
+        .try_place_bid(&test.bidder1, &auction_id, &105);
     assert_eq!(result_low, Err(Ok(ContractError::BidTooLow)));
 
     // Bid exactly at minimum increment (should succeed)
     test.contract.place_bid(&test.bidder1, &auction_id, &110);
 
     // Bid too low (equal to current highest)
-    let result_equal = test.contract.try_place_bid(&test.bidder2, &auction_id, &110);
+    let result_equal = test
+        .contract
+        .try_place_bid(&test.bidder2, &auction_id, &110);
     assert_eq!(result_equal, Err(Ok(ContractError::BidTooLow)));
 
     // Expire the auction
     test.env.ledger().with_mut(|l| l.timestamp = 20);
-    
+
     // Bid after auction ended
-    let result_ended = test.contract.try_place_bid(&test.bidder2, &auction_id, &120);
+    let result_ended = test
+        .contract
+        .try_place_bid(&test.bidder2, &auction_id, &120);
     assert_eq!(result_ended, Err(Ok(ContractError::AuctionHasEnded)));
 }
 
@@ -160,7 +183,12 @@ fn test_place_bid_errors() {
 fn test_close_auction_with_winner() {
     let test = AuctionTest::setup();
     let auction_id = test.contract.create_auction(
-        &test.seller, &"Item".into_val(&test.env), &100, &10, &10, &test.token.address
+        &test.seller,
+        &"Item".into_val(&test.env),
+        &100,
+        &10,
+        &10,
+        &test.token.address,
     );
     test.contract.place_bid(&test.bidder1, &auction_id, &150);
 
@@ -182,7 +210,12 @@ fn test_close_auction_with_winner() {
 fn test_close_auction_no_bids() {
     let test = AuctionTest::setup();
     let auction_id = test.contract.create_auction(
-        &test.seller, &"Item".into_val(&test.env), &100, &10, &10, &test.token.address
+        &test.seller,
+        &"Item".into_val(&test.env),
+        &100,
+        &10,
+        &10,
+        &test.token.address,
     );
 
     // Expire the auction
@@ -203,7 +236,12 @@ fn test_close_auction_no_bids() {
 fn test_close_auction_not_ended() {
     let test = AuctionTest::setup();
     let auction_id = test.contract.create_auction(
-        &test.seller, &"Item".into_val(&test.env), &100, &10, &3600, &test.token.address
+        &test.seller,
+        &"Item".into_val(&test.env),
+        &100,
+        &10,
+        &3600,
+        &test.token.address,
     );
 
     let result = test.contract.try_close_auction(&auction_id);
@@ -214,7 +252,12 @@ fn test_close_auction_not_ended() {
 fn test_cancel_auction() {
     let test = AuctionTest::setup();
     let auction_id = test.contract.create_auction(
-        &test.seller, &"Item".into_val(&test.env), &100, &10, &3600, &test.token.address
+        &test.seller,
+        &"Item".into_val(&test.env),
+        &100,
+        &10,
+        &3600,
+        &test.token.address,
     );
 
     // Seller successfully cancels
@@ -224,13 +267,22 @@ fn test_cancel_auction() {
 
     // Non-seller tries to cancel
     let auction_id_2 = test.contract.create_auction(
-        &test.seller, &"Item 2".into_val(&test.env), &100, &10, &3600, &test.token.address
+        &test.seller,
+        &"Item 2".into_val(&test.env),
+        &100,
+        &10,
+        &3600,
+        &test.token.address,
     );
-    let result_auth = test.contract.try_cancel_auction(&test.bidder1, &auction_id_2);
+    let result_auth = test
+        .contract
+        .try_cancel_auction(&test.bidder1, &auction_id_2);
     assert_eq!(result_auth, Err(Ok(ContractError::NotAuctionSeller)));
 
     // Seller tries to cancel after a bid
     test.contract.place_bid(&test.bidder1, &auction_id_2, &110);
-    let result_bids = test.contract.try_cancel_auction(&test.seller, &auction_id_2);
+    let result_bids = test
+        .contract
+        .try_cancel_auction(&test.seller, &auction_id_2);
     assert_eq!(result_bids, Err(Ok(ContractError::AuctionHasBids)));
 }
